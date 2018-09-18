@@ -48,7 +48,7 @@ go get -u github.com/zhhao226/apollosdk
 2. cluster可以多个地方获取，获取的优先级：
 - 系统环境变量配置了cluster优先获取环境变量配置：os.Getenv("apollo.cluster")
 - 系统环境变量没有配置则从config.properties配置文件中加载
-- 否则默认返回“defalut”
+- 否则默认返回“default”
 3. metaServer可以从多个地方获取，获取的优先级：
 - 系统环境变量配置了metaServer优先获取环境变量配置：os.Getenv("DOCKER_SERVER")
 - 系统环境变量没有配置则从config.properties配置文件中加载
