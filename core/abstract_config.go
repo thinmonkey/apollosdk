@@ -13,8 +13,8 @@ type AbstractConfig struct {
 	ConfigVersion         int64 `json:"configVersion"`
 	cache                 *freecache.Cache
 	rwMutex               sync.RWMutex
-	configChangeListeners []*ConfigChangeListener
-	InterestKeyMap        map[*ConfigChangeListener][]string
+	configChangeListeners []chan ConfigChangeEvent
+	InterestKeyMap        map[chan ConfigChangeEvent][]string
 	GetProperty           func(key string, defaultValue string) []byte
 }
 
@@ -295,11 +295,35 @@ func (config *AbstractConfig) clearConfigCache() {
 *
 * @param listener the config change listener
 */
-func (config *AbstractConfig) AddChangeListener(listener *ConfigChangeListener) {
+func (config *AbstractConfig) addChangeListener(listener chan ConfigChangeEvent) {
 	if config.cache == nil {
 		config.cache = newCache()
 	}
-	config.AddChangeListenerInterestedKeys(listener, nil)
+	config.addChangeListenerInterestedKeys(listener, nil)
+}
+
+func (config *AbstractConfig) GetChangeKeyNotify() <-chan ConfigChangeEvent {
+	if config.cache == nil {
+		config.cache = newCache()
+	}
+	config.rwMutex.Lock()
+	defer config.rwMutex.Unlock()
+	chanNotify := make(chan ConfigChangeEvent, 1)
+	config.configChangeListeners = append(config.configChangeListeners, chanNotify)
+	config.addChangeListener(chanNotify)
+	return chanNotify
+}
+
+func (config *AbstractConfig) GetChangeInterestedKeysNotify(interestedKeys []string) <-chan ConfigChangeEvent {
+	if config.cache == nil {
+		config.cache = newCache()
+	}
+	config.rwMutex.Lock()
+	defer config.rwMutex.Unlock()
+	chanNotify := make(chan ConfigChangeEvent, 1)
+	config.configChangeListeners = append(config.configChangeListeners, chanNotify)
+	config.addChangeListenerInterestedKeys(chanNotify, interestedKeys)
+	return chanNotify
 }
 
 /**
@@ -308,7 +332,7 @@ func (config *AbstractConfig) AddChangeListener(listener *ConfigChangeListener) 
  * @param listener the config change listener
  * @param interestedKeys the keys interested by the listener
  */
-func (config *AbstractConfig) AddChangeListenerInterestedKeys(listener *ConfigChangeListener, interestedKeys []string) {
+func (config *AbstractConfig) addChangeListenerInterestedKeys(listener chan ConfigChangeEvent, interestedKeys []string) {
 	isAdd := false
 	config.rwMutex.Lock()
 	defer config.rwMutex.Unlock()
@@ -332,23 +356,22 @@ func (config *AbstractConfig) AddChangeListenerInterestedKeys(listener *ConfigCh
  * @param listener the specific config change listener to remove
  * @return true if the specific config change listener is found and removed
  */
-
-func (config *AbstractConfig) RemoveChangeListener(listener *ConfigChangeListener) bool {
-	index := -1
-	config.rwMutex.Lock()
-	defer config.rwMutex.Unlock()
-	for key, value := range config.configChangeListeners {
-		if value == listener {
-			index = key
-			break
-		}
-	}
-	if index != -1 {
-		config.configChangeListeners = append(config.configChangeListeners[:index], config.configChangeListeners[index+1:]...)
-		return true
-	}
-	return false
-}
+//func (config *AbstractConfig) RemoveChangeListener(listener chan ConfigChangeEvent) bool {
+//	index := -1
+//	config.rwMutex.Lock()
+//	defer config.rwMutex.Unlock()
+//	for key, value := range config.configChangeListeners {
+//		if value == listener {
+//			index = key
+//			break
+//		}
+//	}
+//	if index != -1 {
+//		config.configChangeListeners = append(config.configChangeListeners[:index], config.configChangeListeners[index+1:]...)
+//		return true
+//	}
+//	return false
+//}
 
 func (config *AbstractConfig) getValueFromCache(key string) []byte {
 	result, _ := config.cache.Get([]byte(key))
@@ -379,13 +402,14 @@ func (config *AbstractConfig) fireConfigChange(changeEvent ConfigChangeEvent) {
 			continue
 		}
 		go func() {
-			(*listener).OnChange(changeEvent)
+
+			listener <- changeEvent
 		}()
 	}
 
 }
 
-func (config *AbstractConfig) isConfigChangeListenerInterested(listener *ConfigChangeListener, changeEvent ConfigChangeEvent) bool {
+func (config *AbstractConfig) isConfigChangeListenerInterested(listener chan ConfigChangeEvent, changeEvent ConfigChangeEvent) bool {
 	interestedKeys := config.InterestKeyMap[listener]
 	if interestedKeys == nil || len(interestedKeys) == 0 {
 		return true

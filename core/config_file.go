@@ -2,6 +2,10 @@ package core
 
 const (
 	PROPERTIES = "properties"
+	XML        = "xml"
+	JSON       = "json"
+	YML        = "yml"
+	YAML       = "yaml"
 )
 
 type ConfigFile interface {
@@ -27,7 +31,7 @@ type ConfigFile interface {
 	 * Get the file format of this config file instance
 	 * @return the config file format enum
 	 */
-	GetConfigFileFormat() int
+	GetConfigFileFormat() string
 
 	/**
 	 * Add change listener to this config file instance.

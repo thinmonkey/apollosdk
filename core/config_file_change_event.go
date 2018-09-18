@@ -2,10 +2,6 @@ package core
 
 import "fmt"
 
-type ConfigFileChangeListener interface {
-	OnChange(changeFileEvent ConfigFileChangeEvent)
-}
-
 type ConfigFileChangeEvent struct {
 	Namespace  string `json:"namespace"`
 	OldValue   string `json:"oldValue"`

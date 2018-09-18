@@ -42,20 +42,10 @@ type Config interface {
 	 */
 	//GetDurationProperty(key string, defaultValue int64) int64
 
-	/**
- * Add change listener to this config instance, will be notified when any key is changed in this namespace.
- *
- * @param listener the config change listener
- */
-	AddChangeListener(listener *ConfigChangeListener)
 
-	/**
-	 * Add change listener to this config instance, will only be notified when any of the interested keys is changed in this namespace.
-	 *
-	 * @param listener the config change listener
-	 * @param interestedKeys the keys interested by the listener
-	 */
-	AddChangeListenerInterestedKeys(listener *ConfigChangeListener, interestedKeys []string)
+	GetChangeKeyNotify() <-chan ConfigChangeEvent
+
+	GetChangeInterestedKeysNotify(interestedKeys []string) <-chan ConfigChangeEvent
 
 	/**
 	 * Remove the change listener
@@ -64,7 +54,7 @@ type Config interface {
 	 * @return true if the specific config change listener is found and removed
 	 */
 
-	RemoveChangeListener(listener *ConfigChangeListener) bool
+	//RemoveChangeListener(listener *ConfigChangeListener) bool
 
 	/**
 	 * Return a set of the property names

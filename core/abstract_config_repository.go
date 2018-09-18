@@ -7,12 +7,12 @@ const (
 	LOCAL
 )
 
+type ConfigSourceType int
+
 type AbstractConfigRepository struct {
 	Listeners []*RepositoryChangeListener
 	rwMutex   sync.RWMutex
 }
-
-type ConfigSourceType int
 
 func (abstractConfigRepository *AbstractConfigRepository) AddChangeListener(listener *RepositoryChangeListener) {
 	isAdd := false
