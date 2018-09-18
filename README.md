@@ -23,3 +23,20 @@ go get -u github.com/zhhao226/agollosdk
 * 灰度配置
 * 客户端容灾
 * 支持多namespace,多集群，
+
+# Use
+## 默认的namespace获取
+```
+config := apollosdk.GetAppConfig()
+(*config).GetStringProperty("mats", "")
+
+chanEvent := (*config).GetChangeKeyNotify()
+configEvent := <-chanEvent
+```
+## 自定义的namespace获取
+```
+config := apollosdk.GetConfig(""app.tc.mat.disable"")
+(*config).GetStringProperty("mats", "")
+chanEvent := (*config).GetChangeKeyNotify()
+configEvent := <-chanEvent
+```
