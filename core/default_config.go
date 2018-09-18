@@ -17,8 +17,8 @@ func NewDefaultConfig(nameSpace string, configReposity *ConfigRepository) *Defau
 		Properties:       (*configReposity).GetConfig(),
 	}
 	defaultConfig.AbstractConfig = AbstractConfig{
-		configChangeListeners: make([]*ConfigChangeListener, 0),
-		InterestKeyMap:        make(map[*ConfigChangeListener][]string, 0),
+		configChangeListeners: make([]chan ConfigChangeEvent, 0),
+		InterestKeyMap:        make(map[chan ConfigChangeEvent][]string, 0),
 		GetProperty:           defaultConfig.GetDefaultProterty,
 	}
 

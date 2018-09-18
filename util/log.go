@@ -1,4 +1,4 @@
-package apollosdk
+package util
 
 import (
 	"github.com/cihub/seelog"

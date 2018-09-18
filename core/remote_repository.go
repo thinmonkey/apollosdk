@@ -7,9 +7,9 @@ import (
 	"net/url"
 	"strings"
 	"encoding/json"
-	"github.com/zhhao226/apollosdk"
 	"github.com/zhhao226/apollosdk/util/schedule"
 	"github.com/zhhao226/apollosdk/util/http"
+	"github.com/zhhao226/apollosdk/util"
 )
 
 type RemoteConfigRepository struct {
@@ -29,7 +29,7 @@ func NewRemoteConfigRepository(Namespace string) *RemoteConfigRepository {
 		Namespace: Namespace,
 	}
 	remoteConfigRepository.remoteConfigLongPollService = NewRemoteConfigLongPollService()
-	remoteConfigRepository.schedulePolicy = schedule.NewExponentialSchedulePolicy(apollosdk.OnErrorRetryInterval, apollosdk.OnErrorRetryInterval*8)
+	remoteConfigRepository.schedulePolicy = schedule.NewExponentialSchedulePolicy(util.OnErrorRetryInterval, util.OnErrorRetryInterval*8)
 	remoteConfigRepository.trySync()
 	remoteConfigRepository.schedulePeriodicRefresh()
 	remoteConfigRepository.scheduleLongPollingRefresh()
@@ -65,9 +65,9 @@ func (remoteConfigRepository *RemoteConfigRepository) transformApolloConfigToPro
 
 func (remoteConfigRepository *RemoteConfigRepository) loadApolloConfig() (*ApolloConfig, error) {
 
-	appId := apollosdk.GetAppId()
-	cluster := apollosdk.GetCluster()
-	dataServer := apollosdk.GetDateServer()
+	appId := util.GetAppId()
+	cluster := util.GetCluster()
+	dataServer := util.GetDateCenter()
 	var maxRetry int
 	if remoteConfigRepository.ConfigNeedForceRefresh {
 		maxRetry = 2
@@ -137,8 +137,8 @@ func assembleQueryConfigUrl(host string, appId string, cluster string, namespace
 		messageQuery := "messages=" + url.QueryEscape(string(message)) + "&"
 		queryParam = queryParam + messageQuery
 	}
-	if apollosdk.GetLocalIp() != "" {
-		ipQuery := "ip=" + url.QueryEscape(apollosdk.GetLocalIp())
+	if util.GetLocalIp() != "" {
+		ipQuery := "ip=" + url.QueryEscape(util.GetLocalIp())
 		queryParam = queryParam + ipQuery
 	}
 	if !strings.HasSuffix(host, "/") {
@@ -147,7 +147,7 @@ func assembleQueryConfigUrl(host string, appId string, cluster string, namespace
 	if queryParam != "" {
 		path = path + "?" + queryParam
 	}
-	apollosdk.Logger.Info(host, path)
+	util.Logger.Info(host, path)
 	return host + path
 }
 
@@ -162,13 +162,13 @@ func (remoteConfigRepository *RemoteConfigRepository) scheduleLongPollingRefresh
 
 func (remoteConfigRepository *RemoteConfigRepository) schedulePeriodicRefresh() {
 	go func() {
-		t2 := time.NewTimer(apollosdk.RefreshInterval)
+		t2 := time.NewTimer(util.RefreshInterval)
 		//long poll for sync
 		for {
 			select {
 			case <-t2.C:
 				remoteConfigRepository.trySync()
-				t2.Reset(apollosdk.RefreshInterval)
+				t2.Reset(util.RefreshInterval)
 			}
 		}
 	}()

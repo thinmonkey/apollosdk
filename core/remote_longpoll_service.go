@@ -10,7 +10,7 @@ import (
 	"net/url"
 	"strings"
 	"fmt"
-	"github.com/zhhao226/apollosdk"
+	"github.com/zhhao226/apollosdk/util"
 )
 
 const (
@@ -30,7 +30,7 @@ type RemoteConfigLongPollService struct {
 
 func NewRemoteConfigLongPollService() *RemoteConfigLongPollService {
 	return &RemoteConfigLongPollService{
-		schedulePolicy:             schedule.NewExponentialSchedulePolicy(apollosdk.OnErrorRetryInterval, apollosdk.OnErrorRetryInterval*8),
+		schedulePolicy:             schedule.NewExponentialSchedulePolicy(util.OnErrorRetryInterval, util.OnErrorRetryInterval*8),
 		longPollNamespace:          make(map[string]*RemoteConfigRepository, 8),
 		notifications:              make(map[string]int64, 8),
 		remoteNotificationMessages: make(map[string]*ApolloNotificationMessages, 8),
@@ -48,10 +48,10 @@ func (remoteConfigLongPollService *RemoteConfigLongPollService) Submit(Namespace
 }
 
 func (remoteConfigLongPollService *RemoteConfigLongPollService) startLongPoll() {
-	appId := apollosdk.GetAppId()
-	cluster := apollosdk.GetCluster()
-	dataCenter := apollosdk.GetDateServer()
-	longPollingInitialDelayInMills := apollosdk.LongPollingInitialDelayInMills
+	appId := util.GetAppId()
+	cluster := util.GetCluster()
+	dataCenter := util.GetDateCenter()
+	longPollingInitialDelayInMills := util.LongPollingInitialDelayInMills
 	go func() {
 		if longPollingInitialDelayInMills > 0 {
 			time.Sleep(time.Duration(longPollingInitialDelayInMills))
@@ -79,18 +79,18 @@ func (remoteConfigLongPollService *RemoteConfigLongPollService) doLongPollingRef
 
 			httpReponse, err := http.Request(httpRequest)
 			if err != nil {
-				apollosdk.Logger.Error(err)
+				util.Logger.Error(err)
 				lastServiceDto = nil
 				sleepTime := remoteConfigLongPollService.schedulePolicy.Fail()
 				time.Sleep(sleepTime)
 				continue
 			}
-			apollosdk.Logger.Debugf("Long polling response: %s, url: %s", httpReponse.StatusCode, url);
+			util.Logger.Debugf("Long polling response: %s, url: %s", httpReponse.StatusCode, url);
 			if httpReponse.StatusCode == 200 && httpReponse.ReponseBody != nil {
 				var apolloNotifications []ApolloConfigNotification
 				err := json.Unmarshal(httpReponse.ReponseBody, &apolloNotifications)
 				if err != nil {
-					apollosdk.Logger.Error("json unmarshal err ", err)
+					util.Logger.Error("json unmarshal err ", err)
 					lastServiceDto = nil
 					sleepTime := remoteConfigLongPollService.schedulePolicy.Fail()
 					time.Sleep(sleepTime)
@@ -129,9 +129,9 @@ func assembleLongPollRefreshUrl(host string, appId string, cluster string, dataC
 		}
 		notifications, err := json.Marshal(notificationList)
 		if err != nil {
-			apollosdk.Logger.Error(err)
+			util.Logger.Error(err)
 		}
-		apollosdk.Logger.Info(string(notifications))
+		util.Logger.Info(string(notifications))
 		notificationsQuery := "notifications=" + url.QueryEscape(string(notifications)) + "&"
 		queryParam = queryParam + notificationsQuery
 	}
@@ -139,15 +139,15 @@ func assembleLongPollRefreshUrl(host string, appId string, cluster string, dataC
 		messageQuery := "dataCenter=" + url.QueryEscape(dataCenter) + "&"
 		queryParam = queryParam + messageQuery
 	}
-	if apollosdk.GetLocalIp() != "" {
-		ipQuery := "ip=" + url.QueryEscape(apollosdk.GetLocalIp())
+	if util.GetLocalIp() != "" {
+		ipQuery := "ip=" + url.QueryEscape(util.GetLocalIp())
 		queryParam = queryParam + ipQuery
 	}
 	if !strings.HasSuffix(host, "/") {
 		host = host + "/"
 	}
 	url := host + "notifications/v2?" + queryParam
-	apollosdk.Logger.Info(url)
+	util.Logger.Info(url)
 	return url
 }
 

@@ -3,11 +3,11 @@ package core
 import (
 	"net/url"
 	"strings"
-	"github.com/zhhao226/apollosdk"
 	"github.com/zhhao226/apollosdk/util/http"
 	"encoding/json"
 	"time"
 	"sync"
+	"github.com/zhhao226/apollosdk/util"
 )
 
 var once sync.Once
@@ -32,40 +32,40 @@ func (serviceLoader *ConfigServiceLoader) tryUpdateConfigServices() {
 
 func (serviceLoader *ConfigServiceLoader) schedulePeriodicRefresh() {
 	go func() {
-		t2 := time.NewTimer(apollosdk.RefreshInterval)
+		t2 := time.NewTimer(util.RefreshInterval)
 		//long poll for sync
 		for {
 			select {
 			case <-t2.C:
 				serviceLoader.tryUpdateConfigServices()
-				t2.Reset(apollosdk.RefreshInterval)
+				t2.Reset(util.RefreshInterval)
 			}
 		}
 	}()
 }
 
 func (serviceLoader *ConfigServiceLoader) updateConfigServices() {
-	url := serviceLoader.assembleQueryConfigUrl(apollosdk.GetMetaServer(), apollosdk.GetAppId())
+	url := serviceLoader.assembleQueryConfigUrl(util.GetMetaServer(), util.GetAppId())
 
 	httpRequest := http.HttpRequest{
 		Url:            url,
-		ConnectTimeout: apollosdk.ConnectTimeout,
+		ConnectTimeout: util.ConnectTimeout,
 	}
 
 	httpReponse, err := http.Request(httpRequest)
 	if err != nil {
-		apollosdk.Logger.Error(err)
+		util.Logger.Error(err)
 	}
 	if httpReponse.StatusCode == 200 && httpReponse.ReponseBody != nil {
 		var serviceConfig = make([]ServiceDto, 1)
 		err := json.Unmarshal(httpReponse.ReponseBody, &serviceConfig)
 		if err != nil {
-			apollosdk.Logger.Error("json unmarshal err ", err)
+			util.Logger.Error("json unmarshal err ", err)
 		}
 		serviceLoader.setConfigServices(serviceConfig)
 	}
 
-	apollosdk.Logger.Debugf("Get service config response: %s, url: %s", httpReponse.StatusCode, url)
+	util.Logger.Debugf("Get service config response: %s, url: %s", httpReponse.StatusCode, url)
 }
 
 func (serviceLoader *ConfigServiceLoader) setConfigServices(serviceDtoList []ServiceDto) {
@@ -76,12 +76,12 @@ func (serviceLoader *ConfigServiceLoader) assembleQueryConfigUrl(host string, ap
 	path := "services/config"
 
 	queryParam := ""
-	if apollosdk.GetAppId() != "" {
-		appIdQuery := "appId=" + url.QueryEscape(apollosdk.GetAppId()) + "&"
+	if util.GetAppId() != "" {
+		appIdQuery := "appId=" + url.QueryEscape(util.GetAppId()) + "&"
 		queryParam = queryParam + appIdQuery
 	}
-	if apollosdk.GetLocalIp() != "" {
-		ipQuery := "ip=" + url.QueryEscape(apollosdk.GetLocalIp())
+	if util.GetLocalIp() != "" {
+		ipQuery := "ip=" + url.QueryEscape(util.GetLocalIp())
 		queryParam = queryParam + ipQuery
 	}
 	if !strings.HasSuffix(host, "/") {
@@ -90,6 +90,6 @@ func (serviceLoader *ConfigServiceLoader) assembleQueryConfigUrl(host string, ap
 	if queryParam != "" {
 		path = path + "?" + queryParam
 	}
-	apollosdk.Logger.Info(host, path)
+	util.Logger.Info(host, path)
 	return host + path
 }

@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 	"github.com/zhhao226/apollosdk/util/set"
-	"github.com/zhhao226/apollosdk"
+	"github.com/zhhao226/apollosdk/util"
 )
 
 type AbstractConfig struct {
@@ -85,7 +85,7 @@ func (config *AbstractConfig) GetIntProperty(key string, defaultValue int) int {
 	if result != nil && len(result) > 0 {
 		value, err := strconv.Atoi(string(result))
 		if err != nil {
-			apollosdk.Logger.Error("string convert to int err:", err)
+			util.Logger.Error("string convert to int err:", err)
 		}
 		return value
 	}
@@ -109,7 +109,7 @@ func (config *AbstractConfig) GetFloatProperty(key string, defaultValue float32)
 	if result != nil && len(result) > 0 {
 		value, err := strconv.ParseFloat(string(result), 32)
 		if err != nil {
-			apollosdk.Logger.Error("string convert to float32 err:", err)
+			util.Logger.Error("string convert to float32 err:", err)
 		}
 		return float32(value)
 	}
@@ -137,7 +137,7 @@ func (config *AbstractConfig) GetDoubleProperty(key string, defaultValue float64
 	if result != nil && len(result) > 0 {
 		value, err := strconv.ParseFloat(string(result), 64)
 		if err != nil {
-			apollosdk.Logger.Error("string convert to float32 err:", err)
+			util.Logger.Error("string convert to float32 err:", err)
 		}
 		return value
 	}
@@ -176,7 +176,7 @@ func (config *AbstractConfig) GetBoolProperty(key string, defaultValue bool) boo
 	if result != nil && len(result) > 0 {
 		value, err := strconv.ParseBool(string(result))
 		if err != nil {
-			apollosdk.Logger.Error("string convert to bool err:", err)
+			util.Logger.Error("string convert to bool err:", err)
 		}
 		return value
 	}
@@ -238,7 +238,7 @@ func (config *AbstractConfig) GetArrayProperty(key string, delimiter string, def
 //}
 
 func newCache() *freecache.Cache {
-	cache := freecache.NewCache(apollosdk.MaxConfigCacheSize)
+	cache := freecache.NewCache(util.MaxConfigCacheSize)
 	return cache
 }
 
@@ -388,7 +388,7 @@ func (config *AbstractConfig) getValueFromPropertiesAndSaveCache(key string) []b
 	if result != nil {
 		config.rwMutex.Lock()
 		if config.ConfigVersion == currentVersion {
-			config.cache.Set([]byte(key), result, apollosdk.ConfigCacheExpireTime)
+			config.cache.Set([]byte(key), result, util.ConfigCacheExpireTime)
 		}
 		config.rwMutex.Unlock()
 		return result

@@ -39,5 +39,5 @@ type ConfigFile interface {
 	 * @param listener the config file change listener
 	 */
 
-	AddChangeListener(listener ConfigFileChangeListener)
+	//AddChangeListener(listener ConfigFileChangeListener)
 }

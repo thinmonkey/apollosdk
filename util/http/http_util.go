@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"io/ioutil"
 	"errors"
-	"github.com/zhhao226/apollosdk"
+	"github.com/zhhao226/apollosdk/util"
 )
 
 func Request(request HttpRequest) (*HttpResponse, error) {
@@ -17,7 +17,7 @@ func Request(request HttpRequest) (*HttpResponse, error) {
 	res, err := client.Get(request.Url)
 
 	if res == nil || err != nil {
-		apollosdk.Logger.Error("Connect Apollo Server Fail,Error:", err)
+		util.Logger.Error("Connect Apollo Server Fail,Error:", err)
 		return nil, err
 	}
 
@@ -26,7 +26,7 @@ func Request(request HttpRequest) (*HttpResponse, error) {
 	case http.StatusOK:
 		responseBody, err = ioutil.ReadAll(res.Body)
 		if err != nil {
-			apollosdk.Logger.Error("Connect Apollo Server Fail,Error:", err)
+			util.Logger.Error("Connect Apollo Server Fail,Error:", err)
 			return nil, err
 		} else {
 			return &HttpResponse{http.StatusOK, responseBody}, nil
@@ -34,9 +34,9 @@ func Request(request HttpRequest) (*HttpResponse, error) {
 	case http.StatusNotModified:
 		return &HttpResponse{http.StatusNotModified, nil}, nil
 	default:
-		apollosdk.Logger.Error("Connect Apollo Server Fail,Error:", err)
+		util.Logger.Error("Connect Apollo Server Fail,Error:", err)
 		if res != nil {
-			apollosdk.Logger.Error("Connect Apollo Server Fail,StatusCode:", res.StatusCode)
+			util.Logger.Error("Connect Apollo Server Fail,StatusCode:", res.StatusCode)
 		}
 		err = errors.New("Connect Apollo Server Fail!")
 		// if error then sleep
