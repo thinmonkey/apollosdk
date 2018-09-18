@@ -32,7 +32,7 @@ go get -u github.com/zhhao226/apollosdk
 {
     "appId":"app-capability",//对应apollo里的应用配置appId
     "cluster":"default",//对应apollo里的集群配置
-    "metaServer":"http://10.160.2.153:8083",//对应apollo里的负载ip地址
+    "metaServer":"http://10.160.1.128:8083",//对应apollo里的负载ip地址
     "refreshInterval":"300",//对应的轮询刷新间隔时间，单位是秒
     "connectTimeout":"20",//http连接超时时间，单位是秒
     "onErrorRetryInterval":"1",//某次http请求错误重试次数
@@ -41,15 +41,15 @@ go get -u github.com/zhhao226/apollosdk
     "longPollingInitialDelayInMills":"2"//启动通知长链接的延迟时间，单位秒。
 }
 ```
-appId可以多个地方获取，获取的优先级：
+1. appId可以多个地方获取，获取的优先级：
 - 系统环境变量配置了appId优先获取环境变量配置：os.Getenv("apollo.appId")
 - 系统环境变量没有配置则从config.properties配置文件中加载
 - 否则默认返回"application"
-cluster可以多个地方获取，获取的优先级：
+2. cluster可以多个地方获取，获取的优先级：
 - 系统环境变量配置了cluster优先获取环境变量配置：os.Getenv("apollo.cluster")
 - 系统环境变量没有配置则从config.properties配置文件中加载
 - 否则默认返回“defalut”
-metaServer可以从多个地方获取，获取的优先级：
+3. metaServer可以从多个地方获取，获取的优先级：
 - 系统环境变量配置了metaServer优先获取环境变量配置：os.Getenv("DOCKER_SERVER")
 - 系统环境变量没有配置则从config.properties配置文件中加载
 
