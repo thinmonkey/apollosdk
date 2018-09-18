@@ -1,4 +1,4 @@
-Agollo - Go Client for Apollo(几乎完全实现go官方java sdk提供的功能)
+Agollo - Go Client for Apollo
 ================
 
 
@@ -12,7 +12,7 @@ Installation
 ``` shell
 go get -u github.com/cihub/seelog
 go get -u github.com/coocood/freecache
-go get -u github.com/zhhao226/agollosdk
+go get -u github.com/zhhao226/apollosdk
 ```
 
 
@@ -22,21 +22,42 @@ go get -u github.com/zhhao226/agollosdk
 * 实时同步配置
 * 灰度配置
 * 客户端容灾
-* 支持多namespace,多集群，
+* 支持多namespace,多集群
+* 支持配置变更实时变化
 
 # Use
+## 初始化配置信息
+启动配置文件在config.properties文件中。
+```
+{
+    "appId":"app-capability",
+    "cluster":"default",
+    "metaServer":"http://10.160.2.153:8083",
+    "refreshInterval":"300",
+    "connectTimeout":"20",
+    "onErrorRetryInterval":"1",
+    "maxConfigCacheSize":52428800,
+    "configCacheExpireTime":60,
+    "longPollingInitialDelayInMills":"2"
+}
+```
+
 ## 默认的namespace获取
 ```
 config := apollosdk.GetAppConfig()
 (*config).GetStringProperty("mats", "")
+go func(){
+  chanEvent := (*config).GetChangeKeyNotify()
+  configEvent := <-chanEvent
+}
 
-chanEvent := (*config).GetChangeKeyNotify()
-configEvent := <-chanEvent
 ```
 ## 自定义的namespace获取
 ```
 config := apollosdk.GetConfig(""app.tc.mat.disable"")
 (*config).GetStringProperty("mats", "")
-chanEvent := (*config).GetChangeKeyNotify()
-configEvent := <-chanEvent
+go func(){
+  chanEvent := (*config).GetChangeKeyNotify()
+  configEvent := <-chanEvent
+}
 ```
