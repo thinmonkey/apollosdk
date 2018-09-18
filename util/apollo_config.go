@@ -29,27 +29,27 @@ func init() {
 	if err != nil {
 		Logger.Info("Fail to read json config file:" + err.Error())
 	}
-	refreshInterval := configStartFile["refreshInterval"].(string)
+	refreshInterval,_ := configStartFile["refreshInterval"].(string)
 	if refreshInterval != "" {
 		RefreshInterval, _ = time.ParseDuration(refreshInterval + "s")
 	}
-	connectTimeout := configStartFile["connectTimeout"].(string)
+	connectTimeout,_ := configStartFile["connectTimeout"].(string)
 	if connectTimeout != "" {
 		ConnectTimeout, _ = time.ParseDuration(connectTimeout + "s")
 	}
-	onErrorRetryInterval := configStartFile["onErrorRetryInterval"].(string)
+	onErrorRetryInterval,_ := configStartFile["onErrorRetryInterval"].(string)
 	if onErrorRetryInterval != "" {
 		OnErrorRetryInterval, _ = time.ParseDuration(onErrorRetryInterval + "s")
 	}
-	configCacheExpireTime := configStartFile["configCacheExpireTime"].(float64)
+	configCacheExpireTime,_ := configStartFile["configCacheExpireTime"].(float64)
 	if configCacheExpireTime != 0 {
 		ConfigCacheExpireTime = int(configCacheExpireTime)
 	}
-	maxConfigCacheSize := configStartFile["maxConfigCacheSize"].(float64)
+	maxConfigCacheSize,_ := configStartFile["maxConfigCacheSize"].(float64)
 	if maxConfigCacheSize != 0 {
 		MaxConfigCacheSize = int(maxConfigCacheSize)
 	}
-	longPollingInitialDelayInMills := configStartFile["longPollingInitialDelayInMills"].(string)
+	longPollingInitialDelayInMills,_ := configStartFile["longPollingInitialDelayInMills"].(string)
 	if longPollingInitialDelayInMills != "" {
 		LongPollingInitialDelayInMills, _ = time.ParseDuration(longPollingInitialDelayInMills + "s")
 	}
@@ -60,7 +60,7 @@ func GetAppId() string {
 	if appId != "" {
 		return appId
 	}
-	appId = configStartFile["appId"].(string)
+	appId,_ = configStartFile["appId"].(string)
 	if appId != "" {
 		return appId
 	}
@@ -72,7 +72,7 @@ func GetCluster() string {
 	if cluster != "" {
 		return cluster
 	}
-	cluster = configStartFile["cluster"].(string)
+	cluster,_ = configStartFile["cluster"].(string)
 	if cluster != "" {
 		return cluster
 	}
