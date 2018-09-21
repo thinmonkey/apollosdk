@@ -12,7 +12,7 @@ import (
 type AbstractConfig struct {
 	ConfigVersion         int64 `json:"configVersion"`
 	cache                 *freecache.Cache
-	rwMutex               sync.RWMutex
+	rwMutex               sync.Mutex
 	configChangeListeners []chan ConfigChangeEvent
 	InterestKeyMap        map[chan ConfigChangeEvent][]string
 	GetProperty           func(key string, defaultValue string) []byte
@@ -244,9 +244,10 @@ func newCache() *freecache.Cache {
 
 func (config *AbstractConfig) clearConfigCache() {
 	config.rwMutex.Lock()
+	defer config.rwMutex.Unlock()
 	config.cache.Clear()
 	config.ConfigVersion = config.ConfigVersion + 1
-	config.rwMutex.Unlock()
+
 }
 
 /**
@@ -334,8 +335,6 @@ func (config *AbstractConfig) GetChangeInterestedKeysNotify(interestedKeys []str
  */
 func (config *AbstractConfig) addChangeListenerInterestedKeys(listener chan ConfigChangeEvent, interestedKeys []string) {
 	isAdd := false
-	config.rwMutex.Lock()
-	defer config.rwMutex.Unlock()
 	for _, value := range config.configChangeListeners {
 		if value == listener {
 			isAdd = true
@@ -402,7 +401,6 @@ func (config *AbstractConfig) fireConfigChange(changeEvent ConfigChangeEvent) {
 			continue
 		}
 		go func() {
-
 			listener <- changeEvent
 		}()
 	}
