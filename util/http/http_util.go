@@ -25,6 +25,7 @@ func Request(request HttpRequest) (*HttpResponse, error) {
 	switch res.StatusCode {
 	case http.StatusOK:
 		responseBody, err = ioutil.ReadAll(res.Body)
+		defer res.Body.Close()
 		if err != nil {
 			util.Logger.Error("Connect Apollo Server Fail,Error:", err)
 			return nil, err
