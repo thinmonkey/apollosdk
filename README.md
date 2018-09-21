@@ -26,8 +26,8 @@ go get -u github.com/zhhao226/apollosdk
 * 支持配置变更实时变化
 
 # Use
-## 初始化配置信息（必须）
-启动配置文件在config.properties文件中，可配置内容如下：
+## 使用时必须先创建sdK初始化配置文件（必须）
+配置文件名为config.properties，文件位置为当前项目的根目录下，可配置内容如下：
 ```
 {
     "appId":"app-capability",//对应apollo里的应用配置appId
@@ -58,9 +58,10 @@ go get -u github.com/zhhao226/apollosdk
 config := apollosdk.GetAppConfig()
 (*config).GetStringProperty("mats", "")
 go func(){
-  chanEvent := (*config).GetChangeKeyNotify()
-  configEvent := <-chanEvent
-}
+	chanEvent := (*config).GetChangeKeyNotify()
+	configEvent := <-chanEvent
+	log.Info(configEvent)
+}()
 
 ```
 ## 自定义的namespace获取
@@ -68,7 +69,8 @@ go func(){
 config := apollosdk.GetConfig(""app.tc.mat.disable"")
 (*config).GetStringProperty("mats", "")
 go func(){
-  chanEvent := (*config).GetChangeKeyNotify()
-  configEvent := <-chanEvent
-}
+	chanEvent := (*config).GetChangeKeyNotify()
+	configEvent := <-chanEvent
+	log.Info(configEvent)
+}()
 ```
