@@ -1,4 +1,4 @@
-Agollo - Go Client for Apollo
+Agollo - Go Client for Apollo()
 ================
 
 
