@@ -6,72 +6,53 @@ import (
 	"fmt"
 )
 
+
+
 func TestGetConfig(t *testing.T) {
-	config := GetAppConfig()
 
-	chanEvent := (*config).GetChangeKeyNotify()
-
-
-	configNew := GetConfig("app.tc.mat.disable")
-
-	t.Log((*configNew).GetStringProperty("mats", ""))
-
-	configEvent := <-chanEvent
-	t.Log(configEvent)
+	fmt.Println("TestGetConfig")
 
 
-	//定义变化
+	config := *GetAppConfig()
+	t.Log(config.GetStringProperty("test",""))
+
+	//chanEvent := (*config).GetChangeKeyNotify()
+
+	configNew := *GetConfig("app.tc.mat.disable")
+
+	t.Log(configNew.GetStringProperty("mats", ""))
+
+	//定义变量来监听
 	var varFunc OnChangeFunc =  func (changeEvent ConfigChangeEvent)  {
-		fmt.Println(changeEvent)
+		fmt.Println("variable onChange",changeEvent)
 	}
+	configNew.AddChangeListenerFunc(varFunc)
 
-	//添加listener的变量
-	addListener(varFunc)
+	//定义结构实现接口来监听
+	var s SomeThing = "s"
+	configNew.AddChangeListener(s)
 
-	//添加func
-	addListenerFunc(onChangeNofity)
+	//定义普通函数来监听
+	configNew.AddChangeListenerFunc(onTestFunc)
 
-	//添加interface的实现类型
-	var  s Something= "22"
-	addListener(s)
+
+
+	//block Test
+	chan1 :=make(chan int)
+	 <-chan1
 }
 
 
-/***
- 添加Listener的方式
- */
-func addListener(changeListener ConfigChangeListener)  {
-	if changeListener!=nil{
-		fmt.Println(changeListener)
-	}
-}
 
-/***
- 添加Func的方式
- */
-func addListenerFunc(f OnChangeFunc)  {
-	if f!=nil{
-		addListener(f)
-	}
+type SomeThing string
+
+func (s SomeThing)OnChange (changeEvent ConfigChangeEvent)  {
+	fmt.Println("struct onChange",changeEvent)
 }
 
 
-/***
- 有事件来了,函数传进去
- */
-func onChangeNofity(changeEvent ConfigChangeEvent)  {
-	fmt.Println(changeEvent)
-}
 
-
-//某个实现了接口的类型
-type Something string
-
-func (s Something)OnChange(changeEvent ConfigChangeEvent)()  {
-
-}
-
-
-func TestGetAppConfig(t *testing.T) {
-
+//定义普通的函数来接收
+func onTestFunc(changeEvent ConfigChangeEvent) {
+	fmt.Println("func onChange",changeEvent)
 }

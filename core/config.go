@@ -43,9 +43,17 @@ type Config interface {
 	//GetDurationProperty(key string, defaultValue int64) int64
 
 
-	GetChangeKeyNotify() <-chan ConfigChangeEvent
+	//GetChangeKeyNotify() <-chan ConfigChangeEvent
 
-	GetChangeInterestedKeysNotify(interestedKeys []string) <-chan ConfigChangeEvent
+	AddChangeListener(listener ConfigChangeListener)
+
+	AddChangeListenerFunc(listenerFunc OnChangeFunc)
+
+	AddChangeListenerInterestedKeys(listener ConfigChangeListener, interestedKeys []string)
+
+	AddChangeListenerFuncInterestedKeys(listenerFunc OnChangeFunc, interestedKeys []string)
+
+	//GetChangeInterestedKeysNotify(interestedKeys []string) <-chan ConfigChangeEvent
 
 	/**
 	 * Remove the change listener
@@ -53,8 +61,9 @@ type Config interface {
 	 * @param listener the specific config change listener to remove
 	 * @return true if the specific config change listener is found and removed
 	 */
+	RemoveChangeListener(listener ConfigChangeListener) bool
 
-	//RemoveChangeListener(listener *ConfigChangeListener) bool
+
 
 	/**
 	 * Return a set of the property names
