@@ -7,15 +7,20 @@ import (
 	"strings"
 	"github.com/zhhao226/apollosdk/util/set"
 	"github.com/zhhao226/apollosdk/util"
+	"reflect"
 )
 
 type AbstractConfig struct {
 	ConfigVersion         int64 `json:"configVersion"`
 	cache                 *freecache.Cache
 	rwMutex               sync.Mutex
-	configChangeListeners []chan ConfigChangeEvent
-	InterestKeyMap        map[chan ConfigChangeEvent][]string
+	//configChangeListeners []chan ConfigChangeEvent
+	//InterestKeyMap        map[chan ConfigChangeEvent][]string
 	GetProperty           func(key string, defaultValue string) []byte
+
+	//add changeListener
+	configChangeListeners []ConfigChangeListener
+	InterestKeyMap map[ConfigChangeListener][]string
 }
 
 /**
@@ -296,36 +301,43 @@ func (config *AbstractConfig) clearConfigCache() {
 *
 * @param listener the config change listener
 */
-func (config *AbstractConfig) addChangeListener(listener chan ConfigChangeEvent) {
+func (config *AbstractConfig) AddChangeListener(listener ConfigChangeListener) {
 	if config.cache == nil {
 		config.cache = newCache()
 	}
-	config.addChangeListenerInterestedKeys(listener, nil)
+	config.AddChangeListenerInterestedKeys(listener, nil)
 }
 
-func (config *AbstractConfig) GetChangeKeyNotify() <-chan ConfigChangeEvent {
-	if config.cache == nil {
-		config.cache = newCache()
-	}
-	config.rwMutex.Lock()
-	defer config.rwMutex.Unlock()
-	chanNotify := make(chan ConfigChangeEvent, 1)
-	config.configChangeListeners = append(config.configChangeListeners, chanNotify)
-	config.addChangeListener(chanNotify)
-	return chanNotify
+
+
+func (config *AbstractConfig) AddChangeListenerFunc(listenerFunc OnChangeFunc) {
+	config.AddChangeListener(listenerFunc)
 }
 
-func (config *AbstractConfig) GetChangeInterestedKeysNotify(interestedKeys []string) <-chan ConfigChangeEvent {
-	if config.cache == nil {
-		config.cache = newCache()
-	}
-	config.rwMutex.Lock()
-	defer config.rwMutex.Unlock()
-	chanNotify := make(chan ConfigChangeEvent, 1)
-	config.configChangeListeners = append(config.configChangeListeners, chanNotify)
-	config.addChangeListenerInterestedKeys(chanNotify, interestedKeys)
-	return chanNotify
-}
+
+//func (config *AbstractConfig) GetChangeKeyNotify() <-chan ConfigChangeEvent {
+//	if config.cache == nil {
+//		config.cache = newCache()
+//	}
+//	config.rwMutex.Lock()
+//	defer config.rwMutex.Unlock()
+//	chanNotify := make(chan ConfigChangeEvent, 1)
+//	config.configChangeListeners = append(config.configChangeListeners, chanNotify)
+//	config.addChangeListener(chanNotify)
+//	return chanNotify
+//}
+
+//func (config *AbstractConfig) GetChangeInterestedKeysNotify(interestedKeys []string) <-chan ConfigChangeEvent {
+//	if config.cache == nil {
+//		config.cache = newCache()
+//	}
+//	config.rwMutex.Lock()
+//	defer config.rwMutex.Unlock()
+//	chanNotify := make(chan ConfigChangeEvent, 1)
+//	config.configChangeListeners = append(config.configChangeListeners, chanNotify)
+//	config.addChangeListenerInterestedKeys(chanNotify, interestedKeys)
+//	return chanNotify
+//}
 
 /**
  * Add change listener to this config instance, will only be notified when any of the interested keys is changed in this namespace.
@@ -333,10 +345,10 @@ func (config *AbstractConfig) GetChangeInterestedKeysNotify(interestedKeys []str
  * @param listener the config change listener
  * @param interestedKeys the keys interested by the listener
  */
-func (config *AbstractConfig) addChangeListenerInterestedKeys(listener chan ConfigChangeEvent, interestedKeys []string) {
+func (config *AbstractConfig) AddChangeListenerInterestedKeys(listener ConfigChangeListener, interestedKeys []string) {
 	isAdd := false
 	for _, value := range config.configChangeListeners {
-		if value == listener {
+		if reflect.DeepEqual(value,listener) {
 			isAdd = true
 			break
 		}
@@ -349,28 +361,32 @@ func (config *AbstractConfig) addChangeListenerInterestedKeys(listener chan Conf
 	}
 }
 
+
+func (config *AbstractConfig) AddChangeListenerFuncInterestedKeys(listenerFunc OnChangeFunc, interestedKeys []string) {
+	config.AddChangeListenerInterestedKeys(listenerFunc,interestedKeys)
+}
 /**
  * Remove the change listener
  *
  * @param listener the specific config change listener to remove
  * @return true if the specific config change listener is found and removed
  */
-//func (config *AbstractConfig) RemoveChangeListener(listener chan ConfigChangeEvent) bool {
-//	index := -1
-//	config.rwMutex.Lock()
-//	defer config.rwMutex.Unlock()
-//	for key, value := range config.configChangeListeners {
-//		if value == listener {
-//			index = key
-//			break
-//		}
-//	}
-//	if index != -1 {
-//		config.configChangeListeners = append(config.configChangeListeners[:index], config.configChangeListeners[index+1:]...)
-//		return true
-//	}
-//	return false
-//}
+func (config *AbstractConfig) RemoveChangeListener(listener ConfigChangeListener) bool {
+	index := -1
+	config.rwMutex.Lock()
+	defer config.rwMutex.Unlock()
+	for key, value := range config.configChangeListeners {
+		if  reflect.DeepEqual(value,listener) {
+			index = key
+			break
+		}
+	}
+	if index != -1 {
+		config.configChangeListeners = append(config.configChangeListeners[:index], config.configChangeListeners[index+1:]...)
+		return true
+	}
+	return false
+}
 
 func (config *AbstractConfig) getValueFromCache(key string) []byte {
 	result, _ := config.cache.Get([]byte(key))
@@ -400,14 +416,15 @@ func (config *AbstractConfig) fireConfigChange(changeEvent ConfigChangeEvent) {
 		if !config.isConfigChangeListenerInterested(listener, changeEvent) {
 			continue
 		}
-		go func() {
-			listener <- changeEvent
-		}()
+		go func(l ConfigChangeListener) {
+			l.OnChange(changeEvent)
+		}(listener)
+
 	}
 
 }
 
-func (config *AbstractConfig) isConfigChangeListenerInterested(listener chan ConfigChangeEvent, changeEvent ConfigChangeEvent) bool {
+func (config *AbstractConfig) isConfigChangeListenerInterested(listener ConfigChangeListener, changeEvent ConfigChangeEvent) bool {
 	interestedKeys := config.InterestKeyMap[listener]
 	if interestedKeys == nil || len(interestedKeys) == 0 {
 		return true
