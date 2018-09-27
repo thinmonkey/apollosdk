@@ -13,12 +13,12 @@ func TestGetConfig(t *testing.T) {
 	fmt.Println("TestGetConfig")
 
 
-	config := *GetAppConfig()
+	config := GetAppConfig()
 	t.Log(config.GetStringProperty("test",""))
 
 	//chanEvent := (*config).GetChangeKeyNotify()
 
-	configNew := *GetConfig("app.tc.mat.disable")
+	configNew := GetConfig("app.tc.mat.disable")
 
 	t.Log(configNew.GetStringProperty("mats", ""))
 
@@ -34,7 +34,6 @@ func TestGetConfig(t *testing.T) {
 
 	//定义普通函数来监听
 	configNew.AddChangeListenerFunc(onTestFunc)
-
 
 
 	//block Test
