@@ -251,7 +251,11 @@ func (config *AbstractConfig) newCache() *freecache.Cache {
 func (config *AbstractConfig) clearConfigCache() {
 	config.rwMutex.Lock()
 	defer config.rwMutex.Unlock()
-	config.cache.Clear()
+	if config.cache != nil {
+		config.cache.Clear()
+	} else {
+		config.newCache()
+	}
 	config.ConfigVersion = config.ConfigVersion + 1
 
 }

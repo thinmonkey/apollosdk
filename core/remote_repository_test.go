@@ -5,16 +5,17 @@ import (
 	"github.com/zhhao226/apollosdk/util"
 )
 
-func TestNewRemoteConfigLongPollService(t *testing.T) {
+func TestNewRemoteConfigRepository(t *testing.T) {
 	configUtil := util.NewConfigUtil("../config.properties", "", "", "", "")
-	NewRemoteConfigLongPollService(configUtil)
+	//success
+	NewRemoteConfigRepository("application", configUtil)
+	//fail
+	//NewRemoteConfigRepository("application_a", configUtil)
 }
 
-func TestRemoteConfigLongPollService_Submit(t *testing.T) {
+func TestRemoteConfigRepository_GetConfig(t *testing.T) {
 	configUtil := util.NewConfigUtil("../config.properties", "", "", "", "")
-	remoteConfig := *NewRemoteConfigLongPollService(configUtil)
 
 	remoteRepository := NewRemoteConfigRepository("application", configUtil)
-
-	remoteConfig.Submit("application", remoteRepository)
+	t.Log(*remoteRepository.GetConfig())
 }

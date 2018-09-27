@@ -57,7 +57,7 @@ func (defaultConfig *DefaultConfig) OnRepositoryChange(namespace string, newProp
 		return
 	}
 
-	actualChanges := defaultConfig.updateAndCalcConfigChanges(*newProperties, defaultConfig.ConfigRepository.GetSourceType())
+	actualChanges := defaultConfig.updateAndCalcConfigChanges(*newProperties, defaultConfig.ConfigRepository.getSourceType())
 	if actualChanges == nil || len(actualChanges) == 0 {
 		return
 	}

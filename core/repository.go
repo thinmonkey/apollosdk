@@ -24,5 +24,5 @@ type ConfigRepository interface {
    *
    * @return the config's source type
    */
-	GetSourceType() ConfigSourceType
+	getSourceType() ConfigSourceType
 }

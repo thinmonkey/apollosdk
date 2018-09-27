@@ -53,7 +53,7 @@ func (remoteConfigRepository *RemoteConfigRepository) sync() {
 	}
 }
 
-func (remoteConfigRepository *RemoteConfigRepository) GetSourceType() ConfigSourceType {
+func (remoteConfigRepository *RemoteConfigRepository) getSourceType() ConfigSourceType {
 	return REMOTE
 }
 
