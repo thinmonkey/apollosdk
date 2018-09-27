@@ -14,7 +14,7 @@ const (
 var configMap = make(map[string]*core.Config, 10)
 var lock sync.Mutex
 
-func GetConfig(namespace string) *core.Config {
+func GetConfig(namespace string) core.Config {
 	lock.Lock()
 	defer lock.Unlock()
 	config, ok := configMap[namespace]
@@ -28,12 +28,12 @@ func GetConfig(namespace string) *core.Config {
 
 		config := core.Config(defaultConfig)
 		configMap[namespace] = &config
-		return &config
+		return config
 	}
-	return config
+	return *config
 
 }
 
-func GetAppConfig() *core.Config {
+func GetAppConfig() core.Config {
 	return GetConfig(NAMESPACE_APPLICATION)
 }
