@@ -11,16 +11,17 @@ import (
 )
 
 type AbstractConfig struct {
-	ConfigVersion         int64 `json:"configVersion"`
-	cache                 *freecache.Cache
-	rwMutex               sync.Mutex
+	ConfigVersion int64 `json:"configVersion"`
+	cache         *freecache.Cache
+	rwMutex       sync.Mutex
 	//configChangeListeners []chan ConfigChangeEvent
 	//InterestKeyMap        map[chan ConfigChangeEvent][]string
-	GetProperty           func(key string, defaultValue string) []byte
+	GetProperty func(key string, defaultValue string) []byte
 
 	//add changeListener
 	configChangeListeners []ConfigChangeListener
-	InterestKeyMap map[ConfigChangeListener][]string
+	InterestKeyMap        map[ConfigChangeListener][]string
+	configUtil            util.ConfitUtil
 }
 
 /**
@@ -63,7 +64,7 @@ type AbstractConfig struct {
   */
 func (config *AbstractConfig) GetStringProperty(key string, defaultValue string) string {
 	if config.cache == nil {
-		config.cache = newCache()
+		config.cache = config.newCache()
 	}
 	result := config.getValueFromCache(key)
 	if result != nil && len(result) > 0 {
@@ -84,7 +85,7 @@ func (config *AbstractConfig) GetStringProperty(key string, defaultValue string)
   */
 func (config *AbstractConfig) GetIntProperty(key string, defaultValue int) int {
 	if config.cache == nil {
-		config.cache = newCache()
+		config.cache = config.newCache()
 	}
 	result := config.getValueFromCache(key)
 	if result != nil && len(result) > 0 {
@@ -108,7 +109,7 @@ func (config *AbstractConfig) GetIntProperty(key string, defaultValue int) int {
    */
 func (config *AbstractConfig) GetFloatProperty(key string, defaultValue float32) float32 {
 	if config.cache == nil {
-		config.cache = newCache()
+		config.cache = config.newCache()
 	}
 	result := config.getValueFromCache(key)
 	if result != nil && len(result) > 0 {
@@ -136,7 +137,7 @@ func (config *AbstractConfig) GetPropertyNames() []string {
    */
 func (config *AbstractConfig) GetDoubleProperty(key string, defaultValue float64) float64 {
 	if config.cache == nil {
-		config.cache = newCache()
+		config.cache = config.newCache()
 	}
 	result := config.getValueFromCache(key)
 	if result != nil && len(result) > 0 {
@@ -175,7 +176,7 @@ func (config *AbstractConfig) GetDoubleProperty(key string, defaultValue float64
  */
 func (config *AbstractConfig) GetBoolProperty(key string, defaultValue bool) bool {
 	if config.cache == nil {
-		config.cache = newCache()
+		config.cache = config.newCache()
 	}
 	result := config.getValueFromCache(key)
 	if result != nil && len(result) > 0 {
@@ -198,7 +199,7 @@ func (config *AbstractConfig) GetBoolProperty(key string, defaultValue bool) boo
    */
 func (config *AbstractConfig) GetArrayProperty(key string, delimiter string, defaultValue []string) []string {
 	if config.cache == nil {
-		config.cache = newCache()
+		config.cache = config.newCache()
 	}
 	result := config.getValueFromCache(key)
 	if result != nil && len(result) > 0 {
@@ -242,8 +243,8 @@ func (config *AbstractConfig) GetArrayProperty(key string, delimiter string, def
 //	return time.Time{}
 //}
 
-func newCache() *freecache.Cache {
-	cache := freecache.NewCache(util.MaxConfigCacheSize)
+func (config *AbstractConfig) newCache() *freecache.Cache {
+	cache := freecache.NewCache(config.configUtil.MaxConfigCacheSize)
 	return cache
 }
 
@@ -303,17 +304,14 @@ func (config *AbstractConfig) clearConfigCache() {
 */
 func (config *AbstractConfig) AddChangeListener(listener ConfigChangeListener) {
 	if config.cache == nil {
-		config.cache = newCache()
+		config.cache = config.newCache()
 	}
 	config.AddChangeListenerInterestedKeys(listener, nil)
 }
 
-
-
 func (config *AbstractConfig) AddChangeListenerFunc(listenerFunc OnChangeFunc) {
 	config.AddChangeListener(listenerFunc)
 }
-
 
 //func (config *AbstractConfig) GetChangeKeyNotify() <-chan ConfigChangeEvent {
 //	if config.cache == nil {
@@ -348,7 +346,7 @@ func (config *AbstractConfig) AddChangeListenerFunc(listenerFunc OnChangeFunc) {
 func (config *AbstractConfig) AddChangeListenerInterestedKeys(listener ConfigChangeListener, interestedKeys []string) {
 	isAdd := false
 	for _, value := range config.configChangeListeners {
-		if reflect.DeepEqual(value,listener) {
+		if reflect.DeepEqual(value, listener) {
 			isAdd = true
 			break
 		}
@@ -361,10 +359,10 @@ func (config *AbstractConfig) AddChangeListenerInterestedKeys(listener ConfigCha
 	}
 }
 
-
 func (config *AbstractConfig) AddChangeListenerFuncInterestedKeys(listenerFunc OnChangeFunc, interestedKeys []string) {
-	config.AddChangeListenerInterestedKeys(listenerFunc,interestedKeys)
+	config.AddChangeListenerInterestedKeys(listenerFunc, interestedKeys)
 }
+
 /**
  * Remove the change listener
  *
@@ -376,7 +374,7 @@ func (config *AbstractConfig) RemoveChangeListener(listener ConfigChangeListener
 	config.rwMutex.Lock()
 	defer config.rwMutex.Unlock()
 	for key, value := range config.configChangeListeners {
-		if  reflect.DeepEqual(value,listener) {
+		if reflect.DeepEqual(value, listener) {
 			index = key
 			break
 		}
@@ -403,7 +401,7 @@ func (config *AbstractConfig) getValueFromPropertiesAndSaveCache(key string) []b
 	if result != nil {
 		config.rwMutex.Lock()
 		if config.ConfigVersion == currentVersion {
-			config.cache.Set([]byte(key), result, util.ConfigCacheExpireTime)
+			config.cache.Set([]byte(key), result, config.configUtil.ConfigCacheExpireTime)
 		}
 		config.rwMutex.Unlock()
 		return result

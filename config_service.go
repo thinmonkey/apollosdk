@@ -3,6 +3,7 @@ package apollosdk
 import (
 	"github.com/zhhao226/apollosdk/core"
 	"sync"
+	"github.com/zhhao226/apollosdk/util"
 )
 
 const (
@@ -11,8 +12,24 @@ const (
 	CLUSTER_NAMESPACE_SEPARATOR = "+"
 )
 
-var configMap = make(map[string]*core.Config, 10)
-var lock sync.Mutex
+var (
+	configMap  = make(map[string]*core.Config, 10)
+	lock       sync.Mutex
+	ConfitUtil util.ConfitUtil
+	once       sync.Once
+)
+
+//启动默认配置
+func init() {
+	ConfitUtil = util.NewConfigUtil("config.Properties", "", "", "", "")
+}
+
+//启动动态配置
+func Start(configFilename string, appId string, cluster string, metaServer string, dataCenter string) {
+	once.Do(func() {
+		ConfitUtil = util.NewConfigUtil(configFilename, appId, cluster, metaServer, dataCenter)
+	})
+}
 
 func GetConfig(namespace string) core.Config {
 	lock.Lock()
@@ -20,11 +37,11 @@ func GetConfig(namespace string) core.Config {
 	config, ok := configMap[namespace]
 
 	if !ok {
-		remoteRepository := core.NewRemoteConfigRepository(namespace)
+		remoteRepository := core.NewRemoteConfigRepository(namespace, ConfitUtil)
 
 		repository := core.ConfigRepository(remoteRepository)
 
-		defaultConfig := core.NewDefaultConfig(namespace, &repository)
+		defaultConfig := core.NewDefaultConfig(namespace, &repository, ConfitUtil)
 
 		config := core.Config(defaultConfig)
 		configMap[namespace] = &config

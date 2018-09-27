@@ -1,6 +1,9 @@
 package core
 
-import "os"
+import (
+	"os"
+	"github.com/zhhao226/apollosdk/util"
+)
 
 type DefaultConfig struct {
 	AbstractConfig
@@ -10,7 +13,7 @@ type DefaultConfig struct {
 	SourceType       ConfigSourceType
 }
 
-func NewDefaultConfig(nameSpace string, configReposity *ConfigRepository) *DefaultConfig {
+func NewDefaultConfig(nameSpace string, configReposity *ConfigRepository, configUtil util.ConfitUtil) *DefaultConfig {
 	defaultConfig := DefaultConfig{
 		Namespace:        nameSpace,
 		ConfigRepository: *configReposity,
@@ -20,6 +23,7 @@ func NewDefaultConfig(nameSpace string, configReposity *ConfigRepository) *Defau
 		configChangeListeners: make([]ConfigChangeListener, 0),
 		InterestKeyMap:        make(map[ConfigChangeListener][]string, 0),
 		GetProperty:           defaultConfig.GetDefaultProterty,
+		configUtil:            configUtil,
 	}
 
 	configChangeListener := RepositoryChangeListener(&defaultConfig)

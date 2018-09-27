@@ -22,14 +22,16 @@ type RemoteConfigRepository struct {
 	lock                        sync.Mutex
 	ConfigNeedForceRefresh      bool
 	remoteConfigLongPollService *RemoteConfigLongPollService
+	configUtil                  util.ConfitUtil
 }
 
-func NewRemoteConfigRepository(Namespace string) *RemoteConfigRepository {
+func NewRemoteConfigRepository(Namespace string, configUtil util.ConfitUtil) *RemoteConfigRepository {
 	remoteConfigRepository := &RemoteConfigRepository{
-		Namespace: Namespace,
+		Namespace:  Namespace,
+		configUtil: configUtil,
 	}
-	remoteConfigRepository.remoteConfigLongPollService = NewRemoteConfigLongPollService()
-	remoteConfigRepository.schedulePolicy = schedule.NewExponentialSchedulePolicy(util.OnErrorRetryInterval, util.OnErrorRetryInterval*8)
+	remoteConfigRepository.remoteConfigLongPollService = NewRemoteConfigLongPollService(configUtil)
+	remoteConfigRepository.schedulePolicy = schedule.NewExponentialSchedulePolicy(configUtil.HttpOnErrorRetryInterval, configUtil.HttpOnErrorRetryInterval*8)
 	remoteConfigRepository.trySync()
 	remoteConfigRepository.schedulePeriodicRefresh()
 	remoteConfigRepository.scheduleLongPollingRefresh()
@@ -65,9 +67,9 @@ func (remoteConfigRepository *RemoteConfigRepository) transformApolloConfigToPro
 
 func (remoteConfigRepository *RemoteConfigRepository) loadApolloConfig() (*ApolloConfig, error) {
 
-	appId := util.GetAppId()
-	cluster := util.GetCluster()
-	dataServer := util.GetDateCenter()
+	appId := remoteConfigRepository.configUtil.AppId
+	cluster := remoteConfigRepository.configUtil.Cluster
+	dataCenter := remoteConfigRepository.configUtil.DataCenter
 	var maxRetry int
 	if remoteConfigRepository.ConfigNeedForceRefresh {
 		maxRetry = 2
@@ -82,11 +84,11 @@ func (remoteConfigRepository *RemoteConfigRepository) loadApolloConfig() (*Apoll
 			if onErrorSleepTime > 0 {
 				time.Sleep(onErrorSleepTime)
 			}
-			url := assembleQueryConfigUrl(serviceDto.HomePageUrl, appId, cluster, remoteConfigRepository.Namespace, dataServer,
+			url := assembleQueryConfigUrl(serviceDto.HomePageUrl, appId, cluster, remoteConfigRepository.Namespace, dataCenter,
 				remoteConfigRepository.RemoteMessages, remoteConfigRepository.ApolloConfig)
 			httpRequest := http.HttpRequest{
 				Url:            url,
-				ConnectTimeout: util.ConnectTimeout,
+				ConnectTimeout: remoteConfigRepository.configUtil.HttpTimeout,
 			}
 			httpResponse, err := http.Request(httpRequest)
 			if err != nil {
@@ -112,7 +114,7 @@ func (remoteConfigRepository *RemoteConfigRepository) loadApolloConfig() (*Apoll
 
 func (remoteConfigRepository *RemoteConfigRepository) calErrorSleepTime() time.Duration {
 	if remoteConfigRepository.ConfigNeedForceRefresh {
-		return util.OnErrorRetryInterval
+		return remoteConfigRepository.configUtil.HttpOnErrorRetryInterval
 	} else {
 		return remoteConfigRepository.schedulePolicy.Fail()
 	}
@@ -152,7 +154,7 @@ func assembleQueryConfigUrl(host string, appId string, cluster string, namespace
 }
 
 func (remoteConfigRepository *RemoteConfigRepository) getConfigServices() []ServiceDto {
-	configServiceLoad := NewConfigServiceLoad()
+	configServiceLoad := NewConfigServiceLoad(remoteConfigRepository.configUtil)
 	return configServiceLoad.ServiceDtoList
 }
 
@@ -161,22 +163,11 @@ func (remoteConfigRepository *RemoteConfigRepository) scheduleLongPollingRefresh
 }
 
 func (remoteConfigRepository *RemoteConfigRepository) schedulePeriodicRefresh() {
-	go func() {
-		t2 := time.NewTimer(util.RefreshInterval)
-		//long poll for sync
-		for {
-			select {
-			case <-t2.C:
-				remoteConfigRepository.trySync()
-				t2.Reset(util.RefreshInterval)
-			}
-		}
-	}()
+	util.ScheduleIntervalExecutor(remoteConfigRepository.configUtil.HttpRefreshInterval, remoteConfigRepository.trySync)
 }
 
-func (remoteConfigRepository *RemoteConfigRepository) trySync() bool {
+func (remoteConfigRepository *RemoteConfigRepository) trySync() {
 	remoteConfigRepository.sync()
-	return true
 }
 
 func (remoteConfigRepository *RemoteConfigRepository) onLongPollNotified(longPollNotifiedServiceDto ServiceDto, remoteMessages ApolloNotificationMessages) {

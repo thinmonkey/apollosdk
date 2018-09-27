@@ -14,8 +14,7 @@ import (
 )
 
 const (
-	INIT_NOTIFICATION_ID      = -1
-	LONG_POLLING_READ_TIMEOUT = 90 * time.Second
+	INIT_NOTIFICATION_ID = -1
 )
 
 type RemoteConfigLongPollService struct {
@@ -25,15 +24,17 @@ type RemoteConfigLongPollService struct {
 	longPollNamespace          map[string]*RemoteConfigRepository
 	notifications              map[string]int64
 	remoteNotificationMessages map[string]*ApolloNotificationMessages
+	configUtil                 util.ConfitUtil
 	sync.RWMutex
 }
 
-func NewRemoteConfigLongPollService() *RemoteConfigLongPollService {
+func NewRemoteConfigLongPollService(configUtil util.ConfitUtil) *RemoteConfigLongPollService {
 	return &RemoteConfigLongPollService{
-		schedulePolicy:             schedule.NewExponentialSchedulePolicy(util.OnErrorRetryInterval, util.OnErrorRetryInterval*8),
+		schedulePolicy:             schedule.NewExponentialSchedulePolicy(configUtil.HttpOnErrorRetryInterval, configUtil.HttpOnErrorRetryInterval*8),
 		longPollNamespace:          make(map[string]*RemoteConfigRepository, 8),
 		notifications:              make(map[string]int64, 8),
 		remoteNotificationMessages: make(map[string]*ApolloNotificationMessages, 8),
+		configUtil:                 configUtil,
 	}
 }
 
@@ -48,10 +49,10 @@ func (remoteConfigLongPollService *RemoteConfigLongPollService) Submit(Namespace
 }
 
 func (remoteConfigLongPollService *RemoteConfigLongPollService) startLongPoll() {
-	appId := util.GetAppId()
-	cluster := util.GetCluster()
-	dataCenter := util.GetDateCenter()
-	longPollingInitialDelayInMills := util.LongPollingInitialDelayInMills
+	appId := remoteConfigLongPollService.configUtil.AppId
+	cluster := remoteConfigLongPollService.configUtil.Cluster
+	dataCenter := remoteConfigLongPollService.configUtil.DataCenter
+	longPollingInitialDelayInMills := remoteConfigLongPollService.configUtil.LongPollingRefreshInterval
 	go func() {
 		if longPollingInitialDelayInMills > 0 {
 			time.Sleep(time.Duration(longPollingInitialDelayInMills))
@@ -74,7 +75,7 @@ func (remoteConfigLongPollService *RemoteConfigLongPollService) doLongPollingRef
 
 			httpRequest := http.HttpRequest{
 				Url:            url,
-				ConnectTimeout: LONG_POLLING_READ_TIMEOUT,
+				ConnectTimeout: remoteConfigLongPollService.configUtil.LongPollingTimeout,
 			}
 
 			httpReponse, err := http.Request(httpRequest)
@@ -152,7 +153,7 @@ func assembleLongPollRefreshUrl(host string, appId string, cluster string, dataC
 }
 
 func (remoteConfigLongPollService *RemoteConfigLongPollService) getConfigServices() []ServiceDto {
-	configServiceLoad := NewConfigServiceLoad()
+	configServiceLoad := NewConfigServiceLoad(remoteConfigLongPollService.configUtil)
 	return configServiceLoad.ServiceDtoList
 }
 

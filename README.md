@@ -30,15 +30,16 @@ go get -u github.com/zhhao226/apollosdk
 配置文件名为config.properties，文件位置为当前项目的根目录下，可配置内容如下：
 ```
 {
-    "appId":"app-capability",//对应apollo里的应用配置appId
-    "cluster":"default",//对应apollo里的集群配置
-    "metaServer":"http://10.160.1.128:8083",//对应apollo里的负载ip地址
-    "refreshInterval":"300",//对应的轮询刷新间隔时间，单位是秒
-    "connectTimeout":"20",//http连接超时时间，单位是秒
-    "onErrorRetryInterval":"1",//某次http请求错误重试次数
-    "maxConfigCacheSize":52428800,//内存缓存的最大内存，单位字节 50 * 1024 *1024
-    "configCacheExpireTime":60,//缓存配置失效时间，单位分钟
-    "longPollingInitialDelayInMills":"2"//启动通知长链接的延迟时间，单位秒。
+    "appId":"app-capability",
+    "cluster":"default",
+    "metaServer":"http://10.160.1.153:8083",
+    "httpRefreshInterval":"300s",
+    "httpTimeout":"20s",
+    "onErrorRetryInterval":"1s",
+    "maxConfigCacheSize":52428800,
+    "configCacheExpireTime":60,
+    "longPollingInitialDelayInMills":"2s",
+    "longPollingTimeout":"60s"
 }
 ```
 1. appId可以多个地方获取，获取的优先级：
