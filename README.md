@@ -1,5 +1,5 @@
-Agollo - Go Client for Apollo()
-================
+Agollo - Go Client for Apollo
+=============================
 
 
 方便Golang接入配置中心框架 [Apollo](https://github.com/ctripcorp/apollo) 所开发的Golang版本客户端。
@@ -50,27 +50,45 @@ go get -u github.com/zhhao226/apollosdk
 - 系统环境变量没有配置则从config.properties配置文件中加载
 - 否则默认返回“default”
 3. metaServer可以从多个地方获取，获取的优先级：
-- 系统环境变量配置了metaServer优先获取环境变量配置：os.Getenv("DOCKER_SERVER")
+- 系统环境变量配置了metaServer优先获取环境变量配置：os.Getenv("DOCKER_SERVER")--生产上建议这种方式
 - 系统环境变量没有配置则从config.properties配置文件中加载
 
-## 默认的namespace获取
+## 默认的namespace配置获取
 ```
 config := apollosdk.GetAppConfig()
-(*config).GetStringProperty("mats", "")
-go func(){
-	chanEvent := (*config).GetChangeKeyNotify()
-	configEvent := <-chanEvent
-	log.Info(configEvent)
-}()
+config.GetStringProperty("mats", "")
 
 ```
-## 自定义的namespace获取
+## 自定义的namespace配置获取
 ```
 config := apollosdk.GetConfig(""app.tc.mat.disable"")
-(*config).GetStringProperty("mats", "")
-go func(){
-	chanEvent := (*config).GetChangeKeyNotify()
-	configEvent := <-chanEvent
-	log.Info(configEvent)
-}()
+config.GetStringProperty("mats", "")
+```
+## 配置改变实时监听(支持多种监听回调方式)
+```
+configNew := apollosdk.GetConfig(""app.tc.mat.disable"")
+//方式一：定义变量来监听
+var varFunc OnChangeFunc =  func (changeEvent ConfigChangeEvent)  {
+		fmt.Println("variable onChange",changeEvent)
+}
+configNew.AddChangeListenerFunc(varFunc)
+
+
+//方式二：定义普通函数来监听
+func onTestFunc(changeEvent ConfigChangeEvent) {
+	fmt.Println("func onChange",changeEvent)
+}
+configNew.AddChangeListenerFunc(onTestFunc)
+
+//方式三：定义结构实现接口来监听
+type SomeThing string
+
+func (s SomeThing)OnChange (changeEvent ConfigChangeEvent)  {
+	fmt.Println("struct onChange",changeEvent)
+}
+var s SomeThing = "s"
+configNew.AddChangeListener(s)
+
+//移除监听器
+configNew.RemoveChangeListener(s)
 ```
