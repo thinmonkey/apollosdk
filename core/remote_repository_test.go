@@ -6,7 +6,7 @@ import (
 )
 
 func TestNewRemoteConfigRepository(t *testing.T) {
-	configUtil := util.NewConfigUtil("../config.properties", "", "", "", "")
+	configUtil := util.NewConfigUtil("../config.json", "", "", "", "")
 	//success
 	NewRemoteConfigRepository("application", configUtil)
 	//fail
@@ -14,7 +14,7 @@ func TestNewRemoteConfigRepository(t *testing.T) {
 }
 
 func TestRemoteConfigRepository_GetConfig(t *testing.T) {
-	configUtil := util.NewConfigUtil("../config.properties", "", "", "", "")
+	configUtil := util.NewConfigUtil("../config.json", "", "", "", "")
 
 	remoteRepository := NewRemoteConfigRepository("application", configUtil)
 	t.Log(*remoteRepository.GetConfig())

@@ -21,7 +21,7 @@ var (
 
 //启动默认配置
 func init() {
-	ConfitUtil = util.NewConfigUtil("config.Properties", "", "", "", "")
+	ConfitUtil = util.NewConfigUtil("config.json", "", "", "", "")
 }
 
 //启动动态配置

@@ -42,7 +42,7 @@ func NewConfigUtil(configFile string, appId string, cluster string, metaServer s
 
 func (util *ConfitUtil) LoadConfigFile(filename string) {
 	if filename == "" {
-		filename = "config.properties"
+		filename = "config.json"
 	}
 	fs, err := ioutil.ReadFile(filename)
 	if err != nil {
@@ -140,9 +140,9 @@ func initLongpollTimeout(util *ConfitUtil) {
 }
 
 func initLongPollInterval(util *ConfitUtil) {
-	longPollingInitialDelayInMills, _ := util.configStartFile["longPollingInitialDelayInMills"].(string)
-	if longPollingInitialDelayInMills != "" {
-		util.LongPollingRefreshInterval, _ = time.ParseDuration(longPollingInitialDelayInMills)
+	longPollingRefreshInterval, _ := util.configStartFile["longPollingRefreshInterval"].(string)
+	if longPollingRefreshInterval != "" {
+		util.LongPollingRefreshInterval, _ = time.ParseDuration(longPollingRefreshInterval)
 	}
 }
 
