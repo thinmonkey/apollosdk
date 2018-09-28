@@ -76,23 +76,23 @@ apollosdk.Start("/opt/config.json","appId","cluster","metaServer","dataCenter")
 第3种方式 > 第2种方式 > 第1种方式,优先选择动态传递的参数，其次是系统环境变量，最后是配置文件。
 
 # Use
-## 初始化（可选）,不设置则按照默认规则
+### 初始化（可选）,不设置则按照默认规则
 ```
 apollosdk.Start("/opt/config.json","appId","cluster","metaServer","dataCenter")
 ```
 
-## 默认的namespace配置获取
+### 默认的namespace配置获取
 ```
 config := apollosdk.GetAppConfig()
 config.GetStringProperty("mats", "")
 
 ```
-## 自定义的namespace配置获取
+### 自定义的namespace配置获取
 ```
 config := apollosdk.GetConfig(""app.tc.mat.disable"")
 config.GetStringProperty("mats", "")
 ```
-## 配置改变实时监听(支持多种监听回调方式)
+### 配置改变实时监听(支持多种监听回调方式)
 ```
 configNew := apollosdk.GetConfig(""app.tc.mat.disable"")
 //方式一：定义变量来监听
