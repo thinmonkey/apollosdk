@@ -12,7 +12,7 @@ Installation
 ``` shell
 go get -u github.com/cihub/seelog
 go get -u github.com/coocood/freecache
-go get -u github.com/zhhao226/apollosdk
+go get -u github.com/thinmonkey/apollosdk
 ```
 
 
