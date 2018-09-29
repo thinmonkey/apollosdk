@@ -5,8 +5,8 @@ import (
 	"sync"
 	"strconv"
 	"strings"
-	"github.com/zhhao226/apollosdk/util/set"
-	"github.com/zhhao226/apollosdk/util"
+	"github.com/thinmonkey/apollosdk/util/set"
+	"github.com/thinmonkey/apollosdk/util"
 	"reflect"
 )
 

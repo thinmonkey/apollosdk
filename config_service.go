@@ -1,9 +1,9 @@
 package apollosdk
 
 import (
-	"github.com/zhhao226/apollosdk/core"
+	"github.com/thinmonkey/apollosdk/core"
 	"sync"
-	"github.com/zhhao226/apollosdk/util"
+	"github.com/thinmonkey/apollosdk/util"
 )
 
 const (

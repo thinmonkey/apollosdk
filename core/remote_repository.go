@@ -7,9 +7,9 @@ import (
 	"net/url"
 	"strings"
 	"encoding/json"
-	"github.com/zhhao226/apollosdk/util/schedule"
-	"github.com/zhhao226/apollosdk/util/http"
-	"github.com/zhhao226/apollosdk/util"
+	"github.com/thinmonkey/apollosdk/util/schedule"
+	"github.com/thinmonkey/apollosdk/util/http"
+	"github.com/thinmonkey/apollosdk/util"
 )
 
 type RemoteConfigRepository struct {

@@ -3,10 +3,10 @@ package core
 import (
 	"net/url"
 	"strings"
-	"github.com/zhhao226/apollosdk/util/http"
+	"github.com/thinmonkey/apollosdk/util/http"
 	"encoding/json"
 	"sync"
-	"github.com/zhhao226/apollosdk/util"
+	"github.com/thinmonkey/apollosdk/util"
 )
 
 var once sync.Once

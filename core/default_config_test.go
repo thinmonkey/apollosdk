@@ -2,7 +2,7 @@ package core
 
 import (
 	"testing"
-	"github.com/zhhao226/apollosdk/util"
+	"github.com/thinmonkey/apollosdk/util"
 )
 
 func TestNewDefaultConfig(t *testing.T) {

@@ -2,7 +2,7 @@ package apollosdk
 
 import (
 	"testing"
-	. "github.com/zhhao226/apollosdk/core"
+	. "github.com/thinmonkey/apollosdk/core"
 	"fmt"
 )
 

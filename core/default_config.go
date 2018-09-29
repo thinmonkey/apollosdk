@@ -2,7 +2,7 @@ package core
 
 import (
 	"os"
-	"github.com/zhhao226/apollosdk/util"
+	"github.com/thinmonkey/apollosdk/util"
 )
 
 type DefaultConfig struct {

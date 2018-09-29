@@ -2,15 +2,15 @@ package core
 
 import (
 	"time"
-	"github.com/zhhao226/apollosdk/util/schedule"
+	"github.com/thinmonkey/apollosdk/util/schedule"
 	"sync"
 	"math/rand"
-	"github.com/zhhao226/apollosdk/util/http"
+	"github.com/thinmonkey/apollosdk/util/http"
 	"encoding/json"
 	"net/url"
 	"strings"
 	"fmt"
-	"github.com/zhhao226/apollosdk/util"
+	"github.com/thinmonkey/apollosdk/util"
 )
 
 const (
