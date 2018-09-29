@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"io/ioutil"
 	"github.com/thinmonkey/apollosdk/util"
-	"github.com/thinmonkey/apollosdk/core"
 )
 
 func Request(request HttpRequest) (*HttpResponse, error) {
@@ -18,20 +17,20 @@ func Request(request HttpRequest) (*HttpResponse, error) {
 
 	if res == nil || err != nil {
 		util.Logger.Error("Connect Apollo Server Fail,Error:", err)
-		return nil, core.ApolloConfigError{Message: err.Error()}
+		return nil, util.ApolloConfigError{Message: err.Error()}
 	}
 
 	responseBody, err = ioutil.ReadAll(res.Body)
 	defer res.Body.Close()
 	if err != nil {
 		util.Logger.Error("Read Apollo Server Body Fail,Error:", err)
-		return nil, core.ApolloConfigError{Message: err.Error()}
+		return nil, util.ApolloConfigError{Message: err.Error()}
 	}
 
 	if res.StatusCode == http.StatusOK || res.StatusCode == http.StatusNotModified {
 		return &HttpResponse{http.StatusOK, responseBody}, nil
 	}
-	err = core.ApolloConfigStatusCodeError{StatusCode: res.StatusCode, Message: string(responseBody)}
+	err = util.ApolloConfigStatusCodeError{StatusCode: res.StatusCode, Message: string(responseBody)}
 	util.Logger.Errorf("Apollo Server httpResponse error:", err.Error())
 	return nil, err
 }
