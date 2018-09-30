@@ -41,7 +41,7 @@ func GetConfig(namespace string) core.Config {
 
 		repository := core.ConfigRepository(remoteRepository)
 
-		defaultConfig := core.NewDefaultConfig(namespace, &repository, ConfitUtil)
+		defaultConfig := core.NewDefaultConfig(namespace, repository, ConfitUtil)
 
 		config := core.Config(defaultConfig)
 		configMap[namespace] = &config

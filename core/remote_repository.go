@@ -46,7 +46,7 @@ func (remoteConfigRepository *RemoteConfigRepository) GetConfig() *Properties {
 }
 
 func (remoteConfigRepository *RemoteConfigRepository) sync() {
-	currentApolloConfig, _ := remoteConfigRepository.loadApolloConfig()
+	currentApolloConfig := remoteConfigRepository.loadApolloConfig()
 	if currentApolloConfig != remoteConfigRepository.ApolloConfig {
 		remoteConfigRepository.ApolloConfig = currentApolloConfig
 		remoteConfigRepository.FireRepositoryChange(remoteConfigRepository.Namespace, remoteConfigRepository.GetConfig())
@@ -65,7 +65,7 @@ func (remoteConfigRepository *RemoteConfigRepository) transformApolloConfigToPro
 	return &result
 }
 
-func (remoteConfigRepository *RemoteConfigRepository) loadApolloConfig() (*ApolloConfig, error) {
+func (remoteConfigRepository *RemoteConfigRepository) loadApolloConfig() (*ApolloConfig) {
 
 	appId := remoteConfigRepository.configUtil.AppId
 	cluster := remoteConfigRepository.configUtil.Cluster
@@ -79,6 +79,7 @@ func (remoteConfigRepository *RemoteConfigRepository) loadApolloConfig() (*Apoll
 
 	var onErrorSleepTime time.Duration
 	configServices := remoteConfigRepository.getConfigServices()
+
 	for i := 0; i < maxRetry; i++ {
 		for _, serviceDto := range configServices {
 			if onErrorSleepTime > 0 {
@@ -93,23 +94,26 @@ func (remoteConfigRepository *RemoteConfigRepository) loadApolloConfig() (*Apoll
 			httpResponse, err := http.Request(httpRequest)
 			if err != nil {
 				onErrorSleepTime = remoteConfigRepository.calErrorSleepTime()
-				return nil, err
+				util.Logger.Error("loadApolloConfig http err:",err)
+				continue
 			}
 			remoteConfigRepository.ConfigNeedForceRefresh = false
 			remoteConfigRepository.schedulePolicy.Success()
 			if httpResponse.StatusCode == 304 {
-				return remoteConfigRepository.ApolloConfig, nil
+				return remoteConfigRepository.ApolloConfig
 			}
 
 			var newApolloConfig ApolloConfig
 			err = json.Unmarshal(httpResponse.ReponseBody, &newApolloConfig)
 			if err != nil {
-				return nil, err
+				util.Logger.Error("loadApolloConfig http response json unmarshal ApolloConfig err:",err)
+				continue
 			}
-			return &newApolloConfig, nil
+			util.Logger.Infof("remote_repository request success:%s",newApolloConfig)
+			return &newApolloConfig
 		}
 	}
-	return nil, nil
+	return nil
 }
 
 func (remoteConfigRepository *RemoteConfigRepository) calErrorSleepTime() time.Duration {
@@ -149,8 +153,10 @@ func assembleQueryConfigUrl(host string, appId string, cluster string, namespace
 	if queryParam != "" {
 		path = path + "?" + queryParam
 	}
-	util.Logger.Info(host, path)
-	return host + path
+	httpPath := host + path
+	rawUrl,_ := url.PathUnescape(httpPath)
+	util.Logger.Infof("remote_repository request rawUrl:%s",rawUrl)
+	return httpPath
 }
 
 func (remoteConfigRepository *RemoteConfigRepository) getConfigServices() []ServiceDto {

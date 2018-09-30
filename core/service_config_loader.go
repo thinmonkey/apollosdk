@@ -47,6 +47,7 @@ func (serviceLoader *ConfigServiceLoader) updateConfigServices() {
 	httpReponse, err := http.Request(httpRequest)
 	if err != nil {
 		util.Logger.Error(err)
+		return
 	}
 	if httpReponse.StatusCode == 200 && httpReponse.ReponseBody != nil {
 		var serviceConfig = make([]ServiceDto, 1)
@@ -57,7 +58,7 @@ func (serviceLoader *ConfigServiceLoader) updateConfigServices() {
 		serviceLoader.setConfigServices(serviceConfig)
 	}
 
-	util.Logger.Debugf("Get service config response: %s, url: %s", httpReponse.StatusCode, url)
+	util.Logger.Infof("Get service config response,statusCode:%d,body:%s,url: %s", httpReponse.StatusCode,httpReponse.ReponseBody,url)
 }
 
 func (serviceLoader *ConfigServiceLoader) setConfigServices(serviceDtoList []ServiceDto) {
@@ -82,6 +83,8 @@ func (serviceLoader *ConfigServiceLoader) assembleQueryConfigUrl(host string, ap
 	if queryParam != "" {
 		path = path + "?" + queryParam
 	}
-	util.Logger.Info(host, path)
-	return host + path
+	httpPath := host+path
+	rawUrl,_ := url.PathUnescape(httpPath)
+	util.Logger.Infof("service_config request rawUrl:%s",rawUrl)
+	return httpPath
 }

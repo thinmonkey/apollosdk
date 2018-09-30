@@ -28,7 +28,7 @@ func Request(request HttpRequest) (*HttpResponse, error) {
 	}
 
 	if res.StatusCode == http.StatusOK || res.StatusCode == http.StatusNotModified {
-		return &HttpResponse{http.StatusOK, responseBody}, nil
+		return &HttpResponse{res.StatusCode, responseBody}, nil
 	}
 	err = util.ApolloConfigStatusCodeError{StatusCode: res.StatusCode, Message: string(responseBody)}
 	util.Logger.Errorf("Apollo Server httpResponse error:", err.Error())

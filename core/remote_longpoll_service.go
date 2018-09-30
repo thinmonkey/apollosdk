@@ -80,18 +80,18 @@ func (remoteConfigLongPollService *RemoteConfigLongPollService) doLongPollingRef
 
 			httpReponse, err := http.Request(httpRequest)
 			if err != nil {
-				util.Logger.Error(err)
+				util.Logger.Error("doLongPollingRefresh http err:",err.Error())
 				lastServiceDto = nil
 				sleepTime := remoteConfigLongPollService.schedulePolicy.Fail()
 				time.Sleep(sleepTime)
 				continue
 			}
-			util.Logger.Debugf("Long polling response: %s, url: %s", httpReponse.StatusCode, url);
+			util.Logger.Infof("doLongPollingRefresh response,statusCode:%d,body:%s,url: %s", httpReponse.StatusCode,httpReponse.ReponseBody,url)
 			if httpReponse.StatusCode == 200 && httpReponse.ReponseBody != nil {
 				var apolloNotifications []ApolloConfigNotification
 				err := json.Unmarshal(httpReponse.ReponseBody, &apolloNotifications)
 				if err != nil {
-					util.Logger.Error("json unmarshal err ", err)
+					util.Logger.Error("doLongPollingRefresh responseBody json unmarshal []ApolloConfigNotification fail,error:", err)
 					lastServiceDto = nil
 					sleepTime := remoteConfigLongPollService.schedulePolicy.Fail()
 					time.Sleep(sleepTime)
@@ -130,7 +130,7 @@ func assembleLongPollRefreshUrl(host string, appId string, cluster string, dataC
 		}
 		notifications, err := json.Marshal(notificationList)
 		if err != nil {
-			util.Logger.Error(err)
+			util.Logger.Error("json marshal []ApolloConfigNotification fail,error:",util.ApolloConfigError{Message:err.Error()})
 		}
 		util.Logger.Info(string(notifications))
 		notificationsQuery := "notifications=" + url.QueryEscape(string(notifications)) + "&"
@@ -147,9 +147,10 @@ func assembleLongPollRefreshUrl(host string, appId string, cluster string, dataC
 	if !strings.HasSuffix(host, "/") {
 		host = host + "/"
 	}
-	url := host + "notifications/v2?" + queryParam
-	util.Logger.Info(url)
-	return url
+	httpPath := host + "notifications/v2?" + queryParam
+	rawUrl,_ := url.PathUnescape(httpPath)
+	util.Logger.Infof("remote_longpoll_service request rawUrl:%s",rawUrl)
+	return httpPath
 }
 
 func (remoteConfigLongPollService *RemoteConfigLongPollService) getConfigServices() []ServiceDto {

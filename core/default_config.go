@@ -13,11 +13,11 @@ type DefaultConfig struct {
 	SourceType       ConfigSourceType
 }
 
-func NewDefaultConfig(nameSpace string, configReposity *ConfigRepository, configUtil util.ConfitUtil) *DefaultConfig {
+func NewDefaultConfig(nameSpace string, configReposity ConfigRepository, configUtil util.ConfitUtil) *DefaultConfig {
 	defaultConfig := DefaultConfig{
 		Namespace:        nameSpace,
-		ConfigRepository: *configReposity,
-		Properties:       (*configReposity).GetConfig(),
+		ConfigRepository: configReposity,
+		Properties:       configReposity.GetConfig(),
 	}
 	defaultConfig.AbstractConfig = AbstractConfig{
 		configChangeListeners: make([]ConfigChangeListener, 0),
