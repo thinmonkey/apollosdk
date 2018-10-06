@@ -7,15 +7,14 @@ import (
 )
 
 
-
 func TestGetConfig(t *testing.T) {
 
 	fmt.Println("TestGetConfig")
 
 	//Start("aaa","aaa","aaa","aa","aaa")
 
-	config := GetAppConfig()
-	t.Log(config.GetStringProperty("test",""))
+	//config := GetAppConfig()
+	//t.Log(config.GetStringProperty("test",""))
 
 	//chanEvent := (*config).GetChangeKeyNotify()
 

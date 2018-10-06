@@ -86,7 +86,7 @@ func (remoteConfigLongPollService *RemoteConfigLongPollService) doLongPollingRef
 				time.Sleep(sleepTime)
 				continue
 			}
-			util.Logger.Infof("doLongPollingRefresh response,statusCode:%d,body:%s,url: %s", httpResponse.StatusCode,httpResponse.ReponseBody,url)
+			util.Logger.Debugf("doLongPollingRefresh response,statusCode:%d,body:%s,url: %s", httpResponse.StatusCode,httpResponse.ReponseBody,url)
 			if httpResponse.StatusCode == 200 && httpResponse.ReponseBody != nil {
 				var apolloNotifications []ApolloConfigNotification
 				err := json.Unmarshal(httpResponse.ReponseBody, &apolloNotifications)
@@ -132,7 +132,7 @@ func assembleLongPollRefreshUrl(host string, appId string, cluster string, dataC
 		if err != nil {
 			util.Logger.Error("json marshal []ApolloConfigNotification fail,error:",util.ApolloConfigError{Message:err.Error()})
 		}
-		util.Logger.Info(string(notifications))
+		util.Logger.Debug(string(notifications))
 		notificationsQuery := "notifications=" + url.QueryEscape(string(notifications)) + "&"
 		queryParam = queryParam + notificationsQuery
 	}
@@ -149,7 +149,7 @@ func assembleLongPollRefreshUrl(host string, appId string, cluster string, dataC
 	}
 	httpPath := host + "notifications/v2?" + queryParam
 	rawUrl,_ := url.PathUnescape(httpPath)
-	util.Logger.Infof("remote_longpoll_service request rawUrl:%s",rawUrl)
+	util.Logger.Debugf("remote_longpoll_service request rawUrl:%s",rawUrl)
 	return httpPath
 }
 
