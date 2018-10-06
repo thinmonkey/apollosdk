@@ -68,6 +68,10 @@ func (remoteConfigLongPollService *RemoteConfigLongPollService) doLongPollingRef
 		if !remoteConfigLongPollService.longPollServiceStoped {
 			if lastServiceDto == nil {
 				serviceDtos := remoteConfigLongPollService.getConfigServices()
+				if len(serviceDtos) == 0 {
+					util.Logger.Error("serviceDto must not null")
+					return
+				}
 				lastServiceDto = &serviceDtos[rand.Intn(len(serviceDtos))]
 			}
 			url := assembleLongPollRefreshUrl(lastServiceDto.HomePageUrl, appId, cluster, dataCenter,

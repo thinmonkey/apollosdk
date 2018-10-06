@@ -42,7 +42,10 @@ func (remoteConfigRepository *RemoteConfigRepository) GetConfig() *Properties {
 	if remoteConfigRepository.ApolloConfig == nil {
 		remoteConfigRepository.sync()
 	}
-	return remoteConfigRepository.transformApolloConfigToProperties(remoteConfigRepository.ApolloConfig)
+	if remoteConfigRepository.ApolloConfig != nil {
+		return remoteConfigRepository.transformApolloConfigToProperties(remoteConfigRepository.ApolloConfig)
+	}
+	return &Properties{}
 }
 
 func (remoteConfigRepository *RemoteConfigRepository) sync() {
@@ -79,6 +82,10 @@ func (remoteConfigRepository *RemoteConfigRepository) loadApolloConfig() (*Apoll
 
 	var onErrorSleepTime time.Duration
 	configServices := remoteConfigRepository.getConfigServices()
+	if configServices == nil {
+		util.Logger.Error("serviceDto must not null")
+		return nil
+	}
 
 	for i := 0; i < maxRetry; i++ {
 		for _, serviceDto := range configServices {
