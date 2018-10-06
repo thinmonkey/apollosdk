@@ -8,33 +8,33 @@ import (
 )
 
 type ConfitUtil struct {
-	HttpRefreshInterval        time.Duration
-	HttpTimeout                time.Duration
-	HttpOnErrorRetryInterval   time.Duration
-	MaxConfigCacheSize         int
-	ConfigCacheExpireTime      int
-	LongPollingRefreshInterval time.Duration
-	LongPollingTimeout         time.Duration
-	AppId                      string
-	Cluster                    string
-	DataCenter                 string
-	MetaServer                 string
-	configStartFile            map[string]interface{}
+	HttpRefreshInterval      time.Duration
+	HttpTimeout              time.Duration
+	HttpOnErrorRetryInterval time.Duration
+	MaxConfigCacheSize       int
+	ConfigCacheExpireTime    int
+	LongPollingInitDelay     time.Duration
+	LongPollingTimeout       time.Duration
+	AppId                    string
+	Cluster                  string
+	DataCenter               string
+	MetaServer               string
+	configStartFile          map[string]interface{}
 }
 
 func NewConfigUtil(configFile string, appId string, cluster string, metaServer string, dataCenter string) ConfitUtil {
 	configUtil := ConfitUtil{
-		HttpRefreshInterval:        5 * time.Minute,
-		HttpTimeout:                30 * time.Second,
-		HttpOnErrorRetryInterval:   1 * time.Second,
-		MaxConfigCacheSize:         50 * 1024 * 1024,
-		ConfigCacheExpireTime:      1 * 60,
-		LongPollingRefreshInterval: 2 * time.Second,
-		LongPollingTimeout:         60 * time.Second,
-		AppId:                      appId,
-		Cluster:                    cluster,
-		MetaServer:                 metaServer,
-		DataCenter:                 dataCenter,
+		HttpRefreshInterval:      5 * time.Minute,
+		HttpTimeout:              30 * time.Second,
+		HttpOnErrorRetryInterval: 1 * time.Second,
+		MaxConfigCacheSize:       50 * 1024 * 1024,
+		ConfigCacheExpireTime:    1 * 60,
+		LongPollingInitDelay:     2 * time.Second,
+		LongPollingTimeout:       60 * time.Second,
+		AppId:                    appId,
+		Cluster:                  cluster,
+		MetaServer:               metaServer,
+		DataCenter:               dataCenter,
 	}
 	configUtil.LoadConfigFile(configFile)
 	return configUtil
@@ -60,7 +60,7 @@ func (util *ConfitUtil) LoadConfigFile(filename string) {
 	initErrorRetry(util)
 	initCacheExpireTime(util)
 	initMaxCacheSize(util)
-	initLongPollInterval(util)
+	initLongPollInitDelay(util)
 	initLongpollTimeout(util)
 	initAppId(util)
 	initCluster(util)
@@ -139,10 +139,10 @@ func initLongpollTimeout(util *ConfitUtil) {
 	}
 }
 
-func initLongPollInterval(util *ConfitUtil) {
-	longPollingRefreshInterval, _ := util.configStartFile["longPollingRefreshInterval"].(string)
-	if longPollingRefreshInterval != "" {
-		util.LongPollingRefreshInterval, _ = time.ParseDuration(longPollingRefreshInterval)
+func initLongPollInitDelay(util *ConfitUtil) {
+	longPollingInitDelay, _ := util.configStartFile["longPollingInitDelay"].(string)
+	if longPollingInitDelay != "" {
+		util.LongPollingInitDelay, _ = time.ParseDuration(longPollingInitDelay)
 	}
 }
 

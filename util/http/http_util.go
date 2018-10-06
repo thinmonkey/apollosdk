@@ -8,7 +8,7 @@ import (
 
 func Request(request HttpRequest) (*HttpResponse, error) {
 	client := &http.Client{
-		Timeout: request.ConnectTimeout,
+		Timeout:request.ConnectTimeout,
 	}
 
 	var responseBody []byte

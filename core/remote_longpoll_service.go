@@ -52,7 +52,7 @@ func (remoteConfigLongPollService *RemoteConfigLongPollService) startLongPoll() 
 	appId := remoteConfigLongPollService.configUtil.AppId
 	cluster := remoteConfigLongPollService.configUtil.Cluster
 	dataCenter := remoteConfigLongPollService.configUtil.DataCenter
-	longPollingInitialDelayInMills := remoteConfigLongPollService.configUtil.LongPollingRefreshInterval
+	longPollingInitialDelayInMills := remoteConfigLongPollService.configUtil.LongPollingInitDelay
 	go func() {
 		if longPollingInitialDelayInMills > 0 {
 			time.Sleep(time.Duration(longPollingInitialDelayInMills))
@@ -78,18 +78,18 @@ func (remoteConfigLongPollService *RemoteConfigLongPollService) doLongPollingRef
 				ConnectTimeout: remoteConfigLongPollService.configUtil.LongPollingTimeout,
 			}
 
-			httpReponse, err := http.Request(httpRequest)
+			httpResponse, err := http.Request(httpRequest)
 			if err != nil {
-				util.Logger.Error("doLongPollingRefresh http err:",err.Error())
+				util.Logger.Error("doLongPollingRefresh http err:",err)
 				lastServiceDto = nil
 				sleepTime := remoteConfigLongPollService.schedulePolicy.Fail()
 				time.Sleep(sleepTime)
 				continue
 			}
-			util.Logger.Infof("doLongPollingRefresh response,statusCode:%d,body:%s,url: %s", httpReponse.StatusCode,httpReponse.ReponseBody,url)
-			if httpReponse.StatusCode == 200 && httpReponse.ReponseBody != nil {
+			util.Logger.Infof("doLongPollingRefresh response,statusCode:%d,body:%s,url: %s", httpResponse.StatusCode,httpResponse.ReponseBody,url)
+			if httpResponse.StatusCode == 200 && httpResponse.ReponseBody != nil {
 				var apolloNotifications []ApolloConfigNotification
-				err := json.Unmarshal(httpReponse.ReponseBody, &apolloNotifications)
+				err := json.Unmarshal(httpResponse.ReponseBody, &apolloNotifications)
 				if err != nil {
 					util.Logger.Error("doLongPollingRefresh responseBody json unmarshal []ApolloConfigNotification fail,error:", err)
 					lastServiceDto = nil
@@ -102,7 +102,7 @@ func (remoteConfigLongPollService *RemoteConfigLongPollService) doLongPollingRef
 				remoteConfigLongPollService.notify(lastServiceDto, apolloNotifications)
 			}
 
-			if httpReponse.StatusCode == 304 {
+			if httpResponse.StatusCode == 304 {
 				lastServiceDto = nil
 			}
 

@@ -97,6 +97,7 @@ func (remoteConfigRepository *RemoteConfigRepository) loadApolloConfig() (*Apoll
 				util.Logger.Error("loadApolloConfig http err:",err)
 				continue
 			}
+			util.Logger.Infof("remote_repository response,statusCode:%d,body:%s,url: %s", httpResponse.StatusCode,httpResponse.ReponseBody,url)
 			remoteConfigRepository.ConfigNeedForceRefresh = false
 			remoteConfigRepository.schedulePolicy.Success()
 			if httpResponse.StatusCode == 304 {

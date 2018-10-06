@@ -7,6 +7,6 @@
     "onErrorRetryInterval":"1s",
     "maxConfigCacheSize":52428800,
     "configCacheExpireTime":60,
-    "longPollingRefreshInterval":"2s",
+    "longPollingInitDelay":"2s",
     "longPollingTimeout":"60s"
 }

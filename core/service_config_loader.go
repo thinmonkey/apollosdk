@@ -44,21 +44,21 @@ func (serviceLoader *ConfigServiceLoader) updateConfigServices() {
 		ConnectTimeout: serviceLoader.configUtil.HttpTimeout,
 	}
 
-	httpReponse, err := http.Request(httpRequest)
+	httpResponse, err := http.Request(httpRequest)
 	if err != nil {
 		util.Logger.Error(err)
 		return
 	}
-	if httpReponse.StatusCode == 200 && httpReponse.ReponseBody != nil {
+	if httpResponse.StatusCode == 200 && httpResponse.ReponseBody != nil {
 		var serviceConfig = make([]ServiceDto, 1)
-		err := json.Unmarshal(httpReponse.ReponseBody, &serviceConfig)
+		err := json.Unmarshal(httpResponse.ReponseBody, &serviceConfig)
 		if err != nil {
 			util.Logger.Error("json unmarshal err ", err)
 		}
 		serviceLoader.setConfigServices(serviceConfig)
 	}
 
-	util.Logger.Infof("Get service config response,statusCode:%d,body:%s,url: %s", httpReponse.StatusCode,httpReponse.ReponseBody,url)
+	util.Logger.Infof("Get service config response,statusCode:%d,body:%s,url: %s", httpResponse.StatusCode,httpResponse.ReponseBody,url)
 }
 
 func (serviceLoader *ConfigServiceLoader) setConfigServices(serviceDtoList []ServiceDto) {
