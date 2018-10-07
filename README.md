@@ -1,6 +1,7 @@
 Apollosdk - Go Client for Apollo
 ================================
 
+[![Build Status](https://travis-ci.org/thinmonkey/apollosdk.svg?branch=master)](https://travis-ci.org/thinmonkey/apollosdk)
 
 方便Golang接入配置中心框架 [Apollo](https://github.com/ctripcorp/apollo) 所开发的Golang版本客户端。
 
