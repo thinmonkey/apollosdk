@@ -37,8 +37,8 @@ func TestGetConfig(t *testing.T) {
 
 
 	//block Test
-	chan1 :=make(chan int)
-	 <-chan1
+	//chan1 :=make(chan int)
+	//<-chan1
 }
 
 

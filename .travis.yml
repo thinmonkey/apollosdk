@@ -17,4 +17,6 @@ install:
     - go get github.com/coocood/freecache
 
 script:
+    - chmod u+x coverage.sh
+    - ./coverage.sh --coveralls
     - go build -o "$Project"
