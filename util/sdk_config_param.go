@@ -8,18 +8,26 @@ import (
 )
 
 type ConfitUtil struct {
+	ApolloInitConfig
+	CacheInitConfig
 	HttpRefreshInterval      time.Duration
 	HttpTimeout              time.Duration
 	HttpOnErrorRetryInterval time.Duration
-	MaxConfigCacheSize       int
-	ConfigCacheExpireTime    int
 	LongPollingInitDelay     time.Duration
 	LongPollingTimeout       time.Duration
-	AppId                    string
-	Cluster                  string
-	DataCenter               string
-	MetaServer               string
 	configStartFile          map[string]interface{}
+}
+
+type ApolloInitConfig struct {
+	AppId      string
+	Cluster    string
+	DataCenter string
+	MetaServer string
+}
+
+type CacheInitConfig struct {
+	MaxConfigCacheSize    int
+	ConfigCacheExpireTime int
 }
 
 func NewConfigUtil(configFile string, appId string, cluster string, metaServer string, dataCenter string) ConfitUtil {
@@ -27,14 +35,18 @@ func NewConfigUtil(configFile string, appId string, cluster string, metaServer s
 		HttpRefreshInterval:      5 * time.Minute,
 		HttpTimeout:              30 * time.Second,
 		HttpOnErrorRetryInterval: 1 * time.Second,
-		MaxConfigCacheSize:       50 * 1024 * 1024,
-		ConfigCacheExpireTime:    1 * 60,
 		LongPollingInitDelay:     2 * time.Second,
 		LongPollingTimeout:       60 * time.Second,
-		AppId:                    appId,
-		Cluster:                  cluster,
-		MetaServer:               metaServer,
-		DataCenter:               dataCenter,
+		CacheInitConfig: CacheInitConfig{
+			MaxConfigCacheSize:    50 * 1024 * 1024,
+			ConfigCacheExpireTime: 1 * 60,
+		},
+		ApolloInitConfig: ApolloInitConfig{
+			AppId:      appId,
+			Cluster:    cluster,
+			MetaServer: metaServer,
+			DataCenter: dataCenter,
+		},
 	}
 	configUtil.LoadConfigFile(configFile)
 	return configUtil
