@@ -1,9 +1,9 @@
 package apollosdk
 
 import (
+	"github.com/sirupsen/logrus"
 	"github.com/thinmonkey/apollosdk/core"
 	"sync"
-	"github.com/thinmonkey/apollosdk/util"
 )
 
 const (
@@ -15,19 +15,31 @@ const (
 var (
 	configMap  = make(map[string]*core.Config, 10)
 	lock       sync.Mutex
-	ConfitUtil util.ConfitUtil
+	ConfitUtil core.ConfitUtil
 	once       sync.Once
 )
 
 //启动默认配置
 func init() {
-	ConfitUtil = util.NewConfigUtil("config.json", "", "", "", "")
+	logrus.SetFormatter(&logrus.JSONFormatter{})
+	SetDebug(false)
+
+	ConfitUtil = core.NewConfigUtil("config.json", "", "", "", "")
+}
+
+func SetDebug(debug bool) {
+	if debug {
+		logrus.SetLevel(logrus.DebugLevel)
+		logrus.SetReportCaller(true)
+	} else {
+		logrus.SetLevel(logrus.WarnLevel)
+	}
 }
 
 //启动动态配置
 func Start(configFilename string, appId string, cluster string, metaServer string, dataCenter string) {
 	once.Do(func() {
-		ConfitUtil = util.NewConfigUtil(configFilename, appId, cluster, metaServer, dataCenter)
+		ConfitUtil = core.NewConfigUtil(configFilename, appId, cluster, metaServer, dataCenter)
 	})
 }
 

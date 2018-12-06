@@ -2,7 +2,6 @@ package core
 
 import (
 	"os"
-	"github.com/thinmonkey/apollosdk/util"
 )
 
 type DefaultConfig struct {
@@ -13,7 +12,7 @@ type DefaultConfig struct {
 	SourceType       ConfigSourceType
 }
 
-func NewDefaultConfig(nameSpace string, configReposity ConfigRepository, configUtil util.ConfitUtil) *DefaultConfig {
+func NewDefaultConfig(nameSpace string, configReposity ConfigRepository, configUtil ConfitUtil) *DefaultConfig {
 	defaultConfig := DefaultConfig{
 		Namespace:        nameSpace,
 		ConfigRepository: configReposity,

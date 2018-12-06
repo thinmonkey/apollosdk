@@ -1,6 +1,7 @@
-package util
+package core
 
 import (
+	"github.com/sirupsen/logrus"
 	"time"
 	"os"
 	"io/ioutil"
@@ -58,13 +59,13 @@ func (util *ConfitUtil) LoadConfigFile(filename string) {
 	}
 	fs, err := ioutil.ReadFile(filename)
 	if err != nil {
-		Logger.Error("Fail to find config file:" + err.Error())
+		logrus.Error("Fail to find config file:" + err.Error())
 		return
 	}
 	util.configStartFile = make(map[string]interface{}, 10)
 	err = json.Unmarshal(fs, &util.configStartFile)
 	if err != nil {
-		Logger.Error("Fail to read json config file:" + err.Error())
+		logrus.Error("Fail to read json config file:" + err.Error())
 		return
 	}
 	initRefreshTime(util)

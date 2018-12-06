@@ -2,12 +2,12 @@ package core
 
 import (
 	"github.com/coocood/freecache"
-	"sync"
+	"github.com/sirupsen/logrus"
+	"github.com/thinmonkey/apollosdk/util/set"
+	"reflect"
 	"strconv"
 	"strings"
-	"github.com/thinmonkey/apollosdk/util/set"
-	"github.com/thinmonkey/apollosdk/util"
-	"reflect"
+	"sync"
 )
 
 type AbstractConfig struct {
@@ -21,7 +21,7 @@ type AbstractConfig struct {
 	//add changeListener
 	configChangeListeners []ConfigChangeListener
 	InterestKeyMap        map[ConfigChangeListener][]string
-	configUtil            util.ConfitUtil
+	configUtil            ConfitUtil
 }
 
 /**
@@ -91,7 +91,7 @@ func (config *AbstractConfig) GetIntProperty(key string, defaultValue int) int {
 	if result != nil && len(result) > 0 {
 		value, err := strconv.Atoi(string(result))
 		if err != nil {
-			util.Logger.Error("string convert to int err:", err)
+			logrus.Error("string convert to int err:", err)
 		}
 		return value
 	}
@@ -115,7 +115,7 @@ func (config *AbstractConfig) GetFloatProperty(key string, defaultValue float32)
 	if result != nil && len(result) > 0 {
 		value, err := strconv.ParseFloat(string(result), 32)
 		if err != nil {
-			util.Logger.Error("string convert to float32 err:", err)
+			logrus.Error("string convert to float32 err:", err)
 		}
 		return float32(value)
 	}
@@ -143,7 +143,7 @@ func (config *AbstractConfig) GetDoubleProperty(key string, defaultValue float64
 	if result != nil && len(result) > 0 {
 		value, err := strconv.ParseFloat(string(result), 64)
 		if err != nil {
-			util.Logger.Error("string convert to float32 err:", err)
+			logrus.Error("string convert to float32 err:", err)
 		}
 		return value
 	}
@@ -182,7 +182,7 @@ func (config *AbstractConfig) GetBoolProperty(key string, defaultValue bool) boo
 	if result != nil && len(result) > 0 {
 		value, err := strconv.ParseBool(string(result))
 		if err != nil {
-			util.Logger.Error("string convert to bool err:", err)
+			logrus.Error("string convert to bool err:", err)
 		}
 		return value
 	}

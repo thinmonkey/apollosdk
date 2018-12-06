@@ -1,6 +1,7 @@
 package core
 
 import (
+	"github.com/sirupsen/logrus"
 	"sync"
 	"time"
 	"fmt"
@@ -22,10 +23,10 @@ type RemoteConfigRepository struct {
 	lock                        sync.Mutex
 	ConfigNeedForceRefresh      bool
 	remoteConfigLongPollService *RemoteConfigLongPollService
-	configUtil                  util.ConfitUtil
+	configUtil                  ConfitUtil
 }
 
-func NewRemoteConfigRepository(Namespace string, configUtil util.ConfitUtil) *RemoteConfigRepository {
+func NewRemoteConfigRepository(Namespace string, configUtil ConfitUtil) *RemoteConfigRepository {
 	remoteConfigRepository := &RemoteConfigRepository{
 		Namespace:  Namespace,
 		configUtil: configUtil,
@@ -83,7 +84,7 @@ func (remoteConfigRepository *RemoteConfigRepository) loadApolloConfig() (*Apoll
 	var onErrorSleepTime time.Duration
 	configServices := remoteConfigRepository.getConfigServices()
 	if configServices == nil {
-		util.Logger.Error("serviceDto must not null")
+		logrus.Error("serviceDto must not null")
 		return nil
 	}
 
@@ -101,10 +102,10 @@ func (remoteConfigRepository *RemoteConfigRepository) loadApolloConfig() (*Apoll
 			httpResponse, err := http.Request(httpRequest)
 			if err != nil {
 				onErrorSleepTime = remoteConfigRepository.calErrorSleepTime()
-				util.Logger.Error("loadApolloConfig http err:",err)
+				logrus.Error("loadApolloConfig http err:",err)
 				continue
 			}
-			util.Logger.Infof("remote_repository response,statusCode:%d,body:%s,url: %s", httpResponse.StatusCode,httpResponse.ReponseBody,url)
+			logrus.Infof("remote_repository response,statusCode:%d,body:%s,url: %s", httpResponse.StatusCode,httpResponse.ReponseBody,url)
 			remoteConfigRepository.ConfigNeedForceRefresh = false
 			remoteConfigRepository.schedulePolicy.Success()
 			if httpResponse.StatusCode == 304 {
@@ -114,10 +115,10 @@ func (remoteConfigRepository *RemoteConfigRepository) loadApolloConfig() (*Apoll
 			var newApolloConfig ApolloConfig
 			err = json.Unmarshal(httpResponse.ReponseBody, &newApolloConfig)
 			if err != nil {
-				util.Logger.Error("loadApolloConfig http response json unmarshal ApolloConfig err:",err)
+				logrus.Error("loadApolloConfig http response json unmarshal ApolloConfig err:",err)
 				continue
 			}
-			util.Logger.Infof("remote_repository request success:%s",newApolloConfig)
+			logrus.Infof("remote_repository request success:%s",newApolloConfig)
 			return &newApolloConfig
 		}
 	}
@@ -163,7 +164,7 @@ func assembleQueryConfigUrl(host string, appId string, cluster string, namespace
 	}
 	httpPath := host + path
 	rawUrl,_ := url.PathUnescape(httpPath)
-	util.Logger.Infof("remote_repository request rawUrl:%s",rawUrl)
+	logrus.Infof("remote_repository request rawUrl:%s",rawUrl)
 	return httpPath
 }
 

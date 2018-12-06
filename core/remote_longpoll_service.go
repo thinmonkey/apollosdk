@@ -1,16 +1,17 @@
 package core
 
 import (
-	"time"
-	"github.com/thinmonkey/apollosdk/util/schedule"
-	"sync"
-	"math/rand"
-	"github.com/thinmonkey/apollosdk/util/http"
 	"encoding/json"
+	"fmt"
+	"github.com/sirupsen/logrus"
+	"github.com/thinmonkey/apollosdk/util"
+	"github.com/thinmonkey/apollosdk/util/http"
+	"github.com/thinmonkey/apollosdk/util/schedule"
+	"math/rand"
 	"net/url"
 	"strings"
-	"fmt"
-	"github.com/thinmonkey/apollosdk/util"
+	"sync"
+	"time"
 )
 
 const (
@@ -24,11 +25,11 @@ type RemoteConfigLongPollService struct {
 	longPollNamespace          map[string]*RemoteConfigRepository
 	notifications              map[string]int64
 	remoteNotificationMessages map[string]*ApolloNotificationMessages
-	configUtil                 util.ConfitUtil
+	configUtil                 ConfitUtil
 	sync.RWMutex
 }
 
-func NewRemoteConfigLongPollService(configUtil util.ConfitUtil) *RemoteConfigLongPollService {
+func NewRemoteConfigLongPollService(configUtil ConfitUtil) *RemoteConfigLongPollService {
 	return &RemoteConfigLongPollService{
 		schedulePolicy:             schedule.NewExponentialSchedulePolicy(configUtil.HttpOnErrorRetryInterval, configUtil.HttpOnErrorRetryInterval*8),
 		longPollNamespace:          make(map[string]*RemoteConfigRepository, 8),
@@ -69,7 +70,7 @@ func (remoteConfigLongPollService *RemoteConfigLongPollService) doLongPollingRef
 			if lastServiceDto == nil {
 				serviceDtos := remoteConfigLongPollService.getConfigServices()
 				if len(serviceDtos) == 0 {
-					util.Logger.Error("serviceDto must not null")
+					logrus.Error("serviceDto must not null")
 					return
 				}
 				lastServiceDto = &serviceDtos[rand.Intn(len(serviceDtos))]
@@ -84,18 +85,18 @@ func (remoteConfigLongPollService *RemoteConfigLongPollService) doLongPollingRef
 
 			httpResponse, err := http.Request(httpRequest)
 			if err != nil {
-				util.Logger.Error("doLongPollingRefresh http err:",err)
+				logrus.Error("doLongPollingRefresh http err:",err)
 				lastServiceDto = nil
 				sleepTime := remoteConfigLongPollService.schedulePolicy.Fail()
 				time.Sleep(sleepTime)
 				continue
 			}
-			util.Logger.Debugf("doLongPollingRefresh response,statusCode:%d,body:%s,url: %s", httpResponse.StatusCode,httpResponse.ReponseBody,url)
+			logrus.Debugf("doLongPollingRefresh response,statusCode:%d,body:%s,url: %s", httpResponse.StatusCode,httpResponse.ReponseBody,url)
 			if httpResponse.StatusCode == 200 && httpResponse.ReponseBody != nil {
 				var apolloNotifications []ApolloConfigNotification
 				err := json.Unmarshal(httpResponse.ReponseBody, &apolloNotifications)
 				if err != nil {
-					util.Logger.Error("doLongPollingRefresh responseBody json unmarshal []ApolloConfigNotification fail,error:", err)
+					logrus.Error("doLongPollingRefresh responseBody json unmarshal []ApolloConfigNotification fail,error:", err)
 					lastServiceDto = nil
 					sleepTime := remoteConfigLongPollService.schedulePolicy.Fail()
 					time.Sleep(sleepTime)
@@ -134,9 +135,9 @@ func assembleLongPollRefreshUrl(host string, appId string, cluster string, dataC
 		}
 		notifications, err := json.Marshal(notificationList)
 		if err != nil {
-			util.Logger.Error("json marshal []ApolloConfigNotification fail,error:",util.ApolloConfigError{Message:err.Error()})
+			logrus.Error("json marshal []ApolloConfigNotification fail,error:",util.ApolloConfigError{Message:err.Error()})
 		}
-		util.Logger.Debug(string(notifications))
+		logrus.Debug(string(notifications))
 		notificationsQuery := "notifications=" + url.QueryEscape(string(notifications)) + "&"
 		queryParam = queryParam + notificationsQuery
 	}
@@ -153,7 +154,7 @@ func assembleLongPollRefreshUrl(host string, appId string, cluster string, dataC
 	}
 	httpPath := host + "notifications/v2?" + queryParam
 	rawUrl,_ := url.PathUnescape(httpPath)
-	util.Logger.Debugf("remote_longpoll_service request rawUrl:%s",rawUrl)
+	logrus.Debugf("remote_longpoll_service request rawUrl:%s",rawUrl)
 	return httpPath
 }
 

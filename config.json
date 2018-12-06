@@ -2,7 +2,7 @@
     "appId":"app-capability",
     "cluster":"default",
     "metaServer":"http://10.160.2.153:8083",
-    "httpRefreshInterval":"300s",
+    "httpRefreshInterval":"100s",
     "httpTimeout":"20s",
     "onErrorRetryInterval":"1s",
     "maxConfigCacheSize":52428800,

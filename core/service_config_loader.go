@@ -1,6 +1,7 @@
 package core
 
 import (
+	"github.com/sirupsen/logrus"
 	"net/url"
 	"strings"
 	"github.com/thinmonkey/apollosdk/util/http"
@@ -14,10 +15,10 @@ var configServiceLoader *ConfigServiceLoader
 
 type ConfigServiceLoader struct {
 	ServiceDtoList []ServiceDto
-	configUtil     util.ConfitUtil
+	configUtil     ConfitUtil
 }
 
-func NewConfigServiceLoad(configUtil util.ConfitUtil) *ConfigServiceLoader {
+func NewConfigServiceLoad(configUtil ConfitUtil) *ConfigServiceLoader {
 	once.Do(func() {
 		configServiceLoader = &ConfigServiceLoader{
 			configUtil: configUtil,
@@ -46,19 +47,19 @@ func (serviceLoader *ConfigServiceLoader) updateConfigServices() {
 
 	httpResponse, err := http.Request(httpRequest)
 	if err != nil {
-		util.Logger.Error(err)
+		logrus.Error(err)
 		return
 	}
 	if httpResponse.StatusCode == 200 && httpResponse.ReponseBody != nil {
 		var serviceConfig = make([]ServiceDto, 1)
 		err := json.Unmarshal(httpResponse.ReponseBody, &serviceConfig)
 		if err != nil {
-			util.Logger.Error("json unmarshal err ", err)
+			logrus.Error("json unmarshal err ", err)
 		}
 		serviceLoader.setConfigServices(serviceConfig)
 	}
 
-	util.Logger.Infof("Get service config response,statusCode:%d,body:%s,url: %s", httpResponse.StatusCode,httpResponse.ReponseBody,url)
+	logrus.Infof("Get service config response,statusCode:%d,body:%s,url: %s", httpResponse.StatusCode,httpResponse.ReponseBody,url)
 }
 
 func (serviceLoader *ConfigServiceLoader) setConfigServices(serviceDtoList []ServiceDto) {
@@ -85,6 +86,6 @@ func (serviceLoader *ConfigServiceLoader) assembleQueryConfigUrl(host string, ap
 	}
 	httpPath := host+path
 	rawUrl,_ := url.PathUnescape(httpPath)
-	util.Logger.Infof("service_config request rawUrl:%s",rawUrl)
+	logrus.Infof("service_config request rawUrl:%s",rawUrl)
 	return httpPath
 }

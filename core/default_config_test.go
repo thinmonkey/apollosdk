@@ -2,11 +2,10 @@ package core
 
 import (
 	"testing"
-	"github.com/thinmonkey/apollosdk/util"
 )
 
 func TestNewDefaultConfig(t *testing.T) {
-	configUtil := util.NewConfigUtil("../config.json", "", "", "", "")
+	configUtil := NewConfigUtil("../config.json", "", "", "", "")
 
 	remoteRepository := NewRemoteConfigRepository("application", configUtil)
 
@@ -15,7 +14,7 @@ func TestNewDefaultConfig(t *testing.T) {
 }
 
 func TestDefaultConfig_GetPropertyNames(t *testing.T) {
-	configUtil := util.NewConfigUtil("../config.json", "", "", "", "")
+	configUtil := NewConfigUtil("../config.json", "", "", "", "")
 
 	remoteRepository := NewRemoteConfigRepository("application", configUtil)
 
@@ -25,7 +24,7 @@ func TestDefaultConfig_GetPropertyNames(t *testing.T) {
 }
 
 func TestDefaultConfig_OnRepositoryChange(t *testing.T) {
-	configUtil := util.NewConfigUtil("../config.json", "", "", "", "")
+	configUtil := NewConfigUtil("../config.json", "", "", "", "")
 
 	remoteRepository := NewRemoteConfigRepository("application", configUtil)
 
