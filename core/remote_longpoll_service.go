@@ -3,7 +3,6 @@ package core
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"github.com/thinmonkey/apollosdk/util"
 	"github.com/thinmonkey/apollosdk/util/http"
 	"github.com/thinmonkey/apollosdk/util/schedule"
@@ -70,7 +69,7 @@ func (remoteConfigLongPollService *RemoteConfigLongPollService) doLongPollingRef
 			if lastServiceDto == nil {
 				serviceDtos := remoteConfigLongPollService.getConfigServices()
 				if len(serviceDtos) == 0 {
-					logrus.Error("serviceDto must not null")
+					util.DebugPrintf("serviceDto must not null")
 					return
 				}
 				lastServiceDto = &serviceDtos[rand.Intn(len(serviceDtos))]
@@ -85,18 +84,18 @@ func (remoteConfigLongPollService *RemoteConfigLongPollService) doLongPollingRef
 
 			httpResponse, err := http.Request(httpRequest)
 			if err != nil {
-				logrus.Error("doLongPollingRefresh http err:",err)
+				util.DebugPrintf("doLongPollingRefresh http err:%v",err)
 				lastServiceDto = nil
 				sleepTime := remoteConfigLongPollService.schedulePolicy.Fail()
 				time.Sleep(sleepTime)
 				continue
 			}
-			logrus.Debugf("doLongPollingRefresh response,statusCode:%d,body:%s,url: %s", httpResponse.StatusCode,httpResponse.ReponseBody,url)
+			util.DebugPrintf("doLongPollingRefresh response,statusCode:%d,body:%s,url: %s", httpResponse.StatusCode,httpResponse.ReponseBody,url)
 			if httpResponse.StatusCode == 200 && httpResponse.ReponseBody != nil {
 				var apolloNotifications []ApolloConfigNotification
 				err := json.Unmarshal(httpResponse.ReponseBody, &apolloNotifications)
 				if err != nil {
-					logrus.Error("doLongPollingRefresh responseBody json unmarshal []ApolloConfigNotification fail,error:", err)
+					util.DebugPrintf("doLongPollingRefresh responseBody json unmarshal []ApolloConfigNotification fail,error:%v", err)
 					lastServiceDto = nil
 					sleepTime := remoteConfigLongPollService.schedulePolicy.Fail()
 					time.Sleep(sleepTime)
@@ -135,9 +134,9 @@ func assembleLongPollRefreshUrl(host string, appId string, cluster string, dataC
 		}
 		notifications, err := json.Marshal(notificationList)
 		if err != nil {
-			logrus.Error("json marshal []ApolloConfigNotification fail,error:",util.ApolloConfigError{Message:err.Error()})
+			util.DebugPrintf("json marshal []ApolloConfigNotification fail,error:",util.ApolloConfigError{Message:err.Error()})
 		}
-		logrus.Debug(string(notifications))
+		util.DebugPrintf(string(notifications))
 		notificationsQuery := "notifications=" + url.QueryEscape(string(notifications)) + "&"
 		queryParam = queryParam + notificationsQuery
 	}
@@ -154,7 +153,7 @@ func assembleLongPollRefreshUrl(host string, appId string, cluster string, dataC
 	}
 	httpPath := host + "notifications/v2?" + queryParam
 	rawUrl,_ := url.PathUnescape(httpPath)
-	logrus.Debugf("remote_longpoll_service request rawUrl:%s",rawUrl)
+	util.DebugPrintf("remote_longpoll_service request rawUrl:%s",rawUrl)
 	return httpPath
 }
 

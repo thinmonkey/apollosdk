@@ -1,10 +1,9 @@
 package http
 
 import (
-	"github.com/sirupsen/logrus"
-	"net/http"
-	"io/ioutil"
 	"github.com/thinmonkey/apollosdk/util"
+	"io/ioutil"
+	"net/http"
 )
 
 func Request(request HttpRequest) (*HttpResponse, error) {
@@ -17,14 +16,14 @@ func Request(request HttpRequest) (*HttpResponse, error) {
 	res, err := client.Get(request.Url)
 
 	if res == nil || err != nil {
-		logrus.Error("Connect Apollo Server Fail,Error:", err)
+		util.DebugPrintf("Connect Apollo Server Fail,Error:%v", err)
 		return nil, util.ApolloConfigError{Message: err.Error()}
 	}
 
 	responseBody, err = ioutil.ReadAll(res.Body)
 	defer res.Body.Close()
 	if err != nil {
-		logrus.Error("Read Apollo Server Body Fail,Error:", err)
+		util.DebugPrintf("Read Apollo Server Body Fail,Error:", err)
 		return nil, util.ApolloConfigError{Message: err.Error()}
 	}
 
@@ -32,6 +31,6 @@ func Request(request HttpRequest) (*HttpResponse, error) {
 		return &HttpResponse{res.StatusCode, responseBody}, nil
 	}
 	err = util.ApolloConfigStatusCodeError{StatusCode: res.StatusCode, Message: string(responseBody)}
-	logrus.Errorf("Apollo Server httpResponse error:", err.Error())
+	util.DebugPrintf("Apollo Server httpResponse error:", err.Error())
 	return nil, err
 }

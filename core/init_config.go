@@ -1,11 +1,11 @@
 package core
 
 import (
-	"github.com/sirupsen/logrus"
-	"time"
-	"os"
-	"io/ioutil"
 	"encoding/json"
+	"github.com/thinmonkey/apollosdk/util"
+	"io/ioutil"
+	"os"
+	"time"
 )
 
 type ConfitUtil struct {
@@ -31,7 +31,7 @@ type CacheInitConfig struct {
 	ConfigCacheExpireTime int
 }
 
-func NewConfigUtil(configFile string, appId string, cluster string, metaServer string, dataCenter string) ConfitUtil {
+func newDefaultConfigUtil() *ConfitUtil {
 	configUtil := ConfitUtil{
 		HttpRefreshInterval:      5 * time.Minute,
 		HttpTimeout:              30 * time.Second,
@@ -42,43 +42,50 @@ func NewConfigUtil(configFile string, appId string, cluster string, metaServer s
 			MaxConfigCacheSize:    50 * 1024 * 1024,
 			ConfigCacheExpireTime: 1 * 60,
 		},
-		ApolloInitConfig: ApolloInitConfig{
-			AppId:      appId,
-			Cluster:    cluster,
-			MetaServer: metaServer,
-			DataCenter: dataCenter,
-		},
+		configStartFile: make(map[string]interface{}),
 	}
-	configUtil.LoadConfigFile(configFile)
-	return configUtil
+	return &configUtil
 }
 
-func (util *ConfitUtil) LoadConfigFile(filename string) {
-	if filename == "" {
-		filename = "config.json"
-	}
+func NewConfigWithConfigFile(configFile string) ConfitUtil {
+	cfg := newDefaultConfigUtil()
+	cfg.resolveConfig(configFile)
+	initConfig(cfg)
+	return *cfg
+}
+
+func NewConfigWithApolloInitConfig(config ApolloInitConfig) ConfitUtil {
+	cfg := newDefaultConfigUtil()
+	cfg.ApolloInitConfig = config
+	initConfig(cfg)
+	return *cfg
+}
+
+func (cfg *ConfitUtil) resolveConfig(filename string) {
 	fs, err := ioutil.ReadFile(filename)
 	if err != nil {
-		logrus.Error("Fail to find config file:" + err.Error())
+		util.DebugPrintf("Fail to find config file:" + err.Error())
 		return
 	}
-	util.configStartFile = make(map[string]interface{}, 10)
-	err = json.Unmarshal(fs, &util.configStartFile)
+	err = json.Unmarshal(fs, &cfg.configStartFile)
 	if err != nil {
-		logrus.Error("Fail to read json config file:" + err.Error())
+		util.DebugPrintf("Fail to read json config file:" + err.Error())
 		return
 	}
-	initRefreshTime(util)
-	initHttpTimeout(util)
-	initErrorRetry(util)
-	initCacheExpireTime(util)
-	initMaxCacheSize(util)
-	initLongPollInitDelay(util)
-	initLongpollTimeout(util)
-	initAppId(util)
-	initCluster(util)
-	initDataServer(util)
-	initMetaServer(util)
+}
+
+func initConfig(cfg *ConfitUtil) {
+	initRefreshTime(cfg)
+	initHttpTimeout(cfg)
+	initErrorRetry(cfg)
+	initCacheExpireTime(cfg)
+	initMaxCacheSize(cfg)
+	initLongPollInitDelay(cfg)
+	initLongpollTimeout(cfg)
+	initAppId(cfg)
+	initCluster(cfg)
+	initDataServer(cfg)
+	initMetaServer(cfg)
 }
 func initMetaServer(util *ConfitUtil) {
 	//优先选择用户运行时代码设置的
@@ -86,7 +93,7 @@ func initMetaServer(util *ConfitUtil) {
 		return
 	}
 	//其次选择系统环境变量配置
-	metaCenter := os.Getenv("DOCKER_SERVER")
+	metaCenter := os.Getenv("apollo.metaServer")
 	if metaCenter != "" {
 		util.MetaServer = metaCenter
 		return

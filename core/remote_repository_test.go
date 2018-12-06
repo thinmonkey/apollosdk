@@ -2,11 +2,10 @@ package core
 
 import (
 	"testing"
-	"github.com/thinmonkey/apollosdk/util"
 )
 
 func TestNewRemoteConfigRepository(t *testing.T) {
-	configUtil := util.NewConfigUtil("../config.json", "", "", "", "")
+	configUtil := NewConfigWithConfigFile("../config.json")
 	//success
 	NewRemoteConfigRepository("application", configUtil)
 	//fail
@@ -14,7 +13,7 @@ func TestNewRemoteConfigRepository(t *testing.T) {
 }
 
 func TestRemoteConfigRepository_GetConfig(t *testing.T) {
-	configUtil := util.NewConfigUtil("../config.json", "", "", "", "")
+	configUtil := NewConfigWithConfigFile("../config.json")
 
 	remoteRepository := NewRemoteConfigRepository("application", configUtil)
 	t.Log(*remoteRepository.GetConfig())

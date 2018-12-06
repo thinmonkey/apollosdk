@@ -5,12 +5,12 @@ import (
 )
 
 func TestNewRemoteConfigLongPollService(t *testing.T) {
-	configUtil := NewConfigUtil("../config.json", "", "", "", "")
+	configUtil := NewConfigWithConfigFile("../config.json")
 	NewRemoteConfigLongPollService(configUtil)
 }
 
 func TestRemoteConfigLongPollService_Submit(t *testing.T) {
-	configUtil := NewConfigUtil("../config.json", "", "", "", "")
+	configUtil := NewConfigWithConfigFile("../config.json")
 	remoteConfig := *NewRemoteConfigLongPollService(configUtil)
 
 	remoteRepository := NewRemoteConfigRepository("application", configUtil)

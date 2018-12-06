@@ -1,8 +1,8 @@
 package apollosdk
 
 import (
-	"github.com/sirupsen/logrus"
 	"github.com/thinmonkey/apollosdk/core"
+	"github.com/thinmonkey/apollosdk/util"
 	"sync"
 )
 
@@ -21,25 +21,31 @@ var (
 
 //启动默认配置
 func init() {
-	logrus.SetFormatter(&logrus.JSONFormatter{})
-	SetDebug(false)
-
-	ConfitUtil = core.NewConfigUtil("config.json", "", "", "", "")
+	util.SetDebug(false)
+	//默认的配置
+	ConfitUtil = core.NewConfigWithConfigFile("config.json")
 }
 
 func SetDebug(debug bool) {
-	if debug {
-		logrus.SetLevel(logrus.DebugLevel)
-		logrus.SetReportCaller(true)
-	} else {
-		logrus.SetLevel(logrus.WarnLevel)
-	}
+	util.SetDebug(debug)
 }
 
 //启动动态配置
-func Start(configFilename string, appId string, cluster string, metaServer string, dataCenter string) {
+func Start(appId string, cluster string, metaServer string, dataCenter string) {
 	once.Do(func() {
-		ConfitUtil = core.NewConfigUtil(configFilename, appId, cluster, metaServer, dataCenter)
+		ConfitUtil = core.NewConfigWithApolloInitConfig(core.ApolloInitConfig{
+			AppId:      appId,
+			Cluster:    cluster,
+			MetaServer: metaServer,
+			DataCenter: dataCenter,
+		})
+	})
+}
+
+//自定义配置文件进行配置
+func StartWithCusConfig(configFile string) {
+	once.Do(func() {
+		ConfitUtil = core.NewConfigWithConfigFile(configFile)
 	})
 }
 

@@ -5,7 +5,7 @@ import (
 )
 
 func TestNewDefaultConfig(t *testing.T) {
-	configUtil := NewConfigUtil("../config.json", "", "", "", "")
+	configUtil := NewConfigWithConfigFile("../config.json")
 
 	remoteRepository := NewRemoteConfigRepository("application", configUtil)
 
@@ -14,7 +14,7 @@ func TestNewDefaultConfig(t *testing.T) {
 }
 
 func TestDefaultConfig_GetPropertyNames(t *testing.T) {
-	configUtil := NewConfigUtil("../config.json", "", "", "", "")
+	configUtil := NewConfigWithConfigFile("../config.json")
 
 	remoteRepository := NewRemoteConfigRepository("application", configUtil)
 
@@ -24,7 +24,7 @@ func TestDefaultConfig_GetPropertyNames(t *testing.T) {
 }
 
 func TestDefaultConfig_OnRepositoryChange(t *testing.T) {
-	configUtil := NewConfigUtil("../config.json", "", "", "", "")
+	configUtil := NewConfigWithConfigFile("../config.json")
 
 	remoteRepository := NewRemoteConfigRepository("application", configUtil)
 

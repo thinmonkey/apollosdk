@@ -2,7 +2,7 @@ package core
 
 import (
 	"github.com/coocood/freecache"
-	"github.com/sirupsen/logrus"
+	"github.com/thinmonkey/apollosdk/util"
 	"github.com/thinmonkey/apollosdk/util/set"
 	"reflect"
 	"strconv"
@@ -91,7 +91,7 @@ func (config *AbstractConfig) GetIntProperty(key string, defaultValue int) int {
 	if result != nil && len(result) > 0 {
 		value, err := strconv.Atoi(string(result))
 		if err != nil {
-			logrus.Error("string convert to int err:", err)
+			util.DebugPrintf("string convert to int err:", err)
 		}
 		return value
 	}
@@ -115,7 +115,7 @@ func (config *AbstractConfig) GetFloatProperty(key string, defaultValue float32)
 	if result != nil && len(result) > 0 {
 		value, err := strconv.ParseFloat(string(result), 32)
 		if err != nil {
-			logrus.Error("string convert to float32 err:", err)
+			util.DebugPrintf("string convert to float32 err:", err)
 		}
 		return float32(value)
 	}
@@ -143,7 +143,7 @@ func (config *AbstractConfig) GetDoubleProperty(key string, defaultValue float64
 	if result != nil && len(result) > 0 {
 		value, err := strconv.ParseFloat(string(result), 64)
 		if err != nil {
-			logrus.Error("string convert to float32 err:", err)
+			util.DebugPrintf("string convert to float32 err:", err)
 		}
 		return value
 	}
@@ -182,7 +182,7 @@ func (config *AbstractConfig) GetBoolProperty(key string, defaultValue bool) boo
 	if result != nil && len(result) > 0 {
 		value, err := strconv.ParseBool(string(result))
 		if err != nil {
-			logrus.Error("string convert to bool err:", err)
+			util.DebugPrintf("string convert to bool err:", err)
 		}
 		return value
 	}

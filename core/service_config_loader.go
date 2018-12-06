@@ -1,13 +1,12 @@
 package core
 
 import (
-	"github.com/sirupsen/logrus"
+	"encoding/json"
+	"github.com/thinmonkey/apollosdk/util"
+	"github.com/thinmonkey/apollosdk/util/http"
 	"net/url"
 	"strings"
-	"github.com/thinmonkey/apollosdk/util/http"
-	"encoding/json"
 	"sync"
-	"github.com/thinmonkey/apollosdk/util"
 )
 
 var once sync.Once
@@ -47,19 +46,19 @@ func (serviceLoader *ConfigServiceLoader) updateConfigServices() {
 
 	httpResponse, err := http.Request(httpRequest)
 	if err != nil {
-		logrus.Error(err)
+		util.DebugPrintf("updateConfigServices http err %v ", err)
 		return
 	}
 	if httpResponse.StatusCode == 200 && httpResponse.ReponseBody != nil {
 		var serviceConfig = make([]ServiceDto, 1)
 		err := json.Unmarshal(httpResponse.ReponseBody, &serviceConfig)
 		if err != nil {
-			logrus.Error("json unmarshal err ", err)
+			util.DebugPrintf("json unmarshal err：%v ", err)
 		}
 		serviceLoader.setConfigServices(serviceConfig)
 	}
 
-	logrus.Infof("Get service config response,statusCode:%d,body:%s,url: %s", httpResponse.StatusCode,httpResponse.ReponseBody,url)
+	util.DebugPrintf("Get service config response,statusCode:%d,body:%s,url: %s", httpResponse.StatusCode, httpResponse.ReponseBody, url)
 }
 
 func (serviceLoader *ConfigServiceLoader) setConfigServices(serviceDtoList []ServiceDto) {
@@ -84,8 +83,8 @@ func (serviceLoader *ConfigServiceLoader) assembleQueryConfigUrl(host string, ap
 	if queryParam != "" {
 		path = path + "?" + queryParam
 	}
-	httpPath := host+path
-	rawUrl,_ := url.PathUnescape(httpPath)
-	logrus.Infof("service_config request rawUrl:%s",rawUrl)
+	httpPath := host + path
+	rawUrl, _ := url.PathUnescape(httpPath)
+	util.DebugPrintf("service_config request rawUrl:%s", rawUrl)
 	return httpPath
 }

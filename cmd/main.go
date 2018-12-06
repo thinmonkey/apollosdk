@@ -7,6 +7,10 @@ import (
 )
 
 func main() {
+	apollosdk.SetDebug(true)
+	apollosdk.Start("app-capability","default","http://10.160.2.153:8083","")
+	//apollosdk.StartWithCusConfig("./util/config.json")
+
 	configNew := apollosdk.GetConfig("app.tc.mat.disable")
 
 	//t.Log(configNew.GetStringProperty("mats", ""))

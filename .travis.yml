@@ -13,7 +13,6 @@ before_install:
     - Project=apollosdk
 
 install:
-    - go get github.com/sirupsen/logrus
     - go get github.com/coocood/freecache
 
 script:
