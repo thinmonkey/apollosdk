@@ -15,7 +15,7 @@ const (
 var (
 	configMap  = make(map[string]*core.Config, 10)
 	lock       sync.Mutex
-	ConfitUtil core.ConfitUtil
+	ConfitUtil core.ConfigUtil
 	once       sync.Once
 )
 
@@ -66,9 +66,12 @@ func GetConfig(namespace string) core.Config {
 		return config
 	}
 	return *config
-
 }
 
 func GetAppConfig() core.Config {
 	return GetConfig(NAMESPACE_APPLICATION)
+}
+
+func GetConfigFile(namespace string,configFileFormat core.ConfigSourceType) core.ConfigFile {
+	return
 }

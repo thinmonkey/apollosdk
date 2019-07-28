@@ -14,10 +14,10 @@ var configServiceLoader *ConfigServiceLoader
 
 type ConfigServiceLoader struct {
 	ServiceDtoList []ServiceDto
-	configUtil     ConfitUtil
+	configUtil     ConfigUtil
 }
 
-func NewConfigServiceLoad(configUtil ConfitUtil) *ConfigServiceLoader {
+func NewConfigServiceLoad(configUtil ConfigUtil) *ConfigServiceLoader {
 	once.Do(func() {
 		configServiceLoader = &ConfigServiceLoader{
 			configUtil: configUtil,

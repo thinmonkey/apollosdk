@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-type ConfitUtil struct {
+type ConfigUtil struct {
 	ApolloInitConfig
 	CacheInitConfig
 	HttpRefreshInterval      time.Duration
@@ -31,8 +31,8 @@ type CacheInitConfig struct {
 	ConfigCacheExpireTime int
 }
 
-func newDefaultConfigUtil() *ConfitUtil {
-	configUtil := ConfitUtil{
+func newDefaultConfigUtil() *ConfigUtil {
+	configUtil := ConfigUtil{
 		HttpRefreshInterval:      5 * time.Minute,
 		HttpTimeout:              30 * time.Second,
 		HttpOnErrorRetryInterval: 1 * time.Second,
@@ -47,21 +47,21 @@ func newDefaultConfigUtil() *ConfitUtil {
 	return &configUtil
 }
 
-func NewConfigWithConfigFile(configFile string) ConfitUtil {
+func NewConfigWithConfigFile(configFile string) ConfigUtil {
 	cfg := newDefaultConfigUtil()
 	cfg.resolveConfig(configFile)
 	initConfig(cfg)
 	return *cfg
 }
 
-func NewConfigWithApolloInitConfig(config ApolloInitConfig) ConfitUtil {
+func NewConfigWithApolloInitConfig(config ApolloInitConfig) ConfigUtil {
 	cfg := newDefaultConfigUtil()
 	cfg.ApolloInitConfig = config
 	initConfig(cfg)
 	return *cfg
 }
 
-func (cfg *ConfitUtil) resolveConfig(filename string) {
+func (cfg *ConfigUtil) resolveConfig(filename string) {
 	fs, err := ioutil.ReadFile(filename)
 	if err != nil {
 		util.DebugPrintf("Fail to find config file:" + err.Error())
@@ -74,7 +74,7 @@ func (cfg *ConfitUtil) resolveConfig(filename string) {
 	}
 }
 
-func initConfig(cfg *ConfitUtil) {
+func initConfig(cfg *ConfigUtil) {
 	initRefreshTime(cfg)
 	initHttpTimeout(cfg)
 	initErrorRetry(cfg)
@@ -87,7 +87,7 @@ func initConfig(cfg *ConfitUtil) {
 	initDataServer(cfg)
 	initMetaServer(cfg)
 }
-func initMetaServer(util *ConfitUtil) {
+func initMetaServer(util *ConfigUtil) {
 	//优先选择用户运行时代码设置的
 	if util.MetaServer != "" {
 		return
@@ -105,7 +105,7 @@ func initMetaServer(util *ConfitUtil) {
 	}
 }
 
-func initDataServer(util *ConfitUtil) {
+func initDataServer(util *ConfigUtil) {
 	//优先选择用户运行时代码设置的
 	if util.DataCenter != "" {
 		return
@@ -114,7 +114,7 @@ func initDataServer(util *ConfitUtil) {
 	util.DataCenter = os.Getenv("apollo.dataCenter")
 }
 
-func initCluster(util *ConfitUtil) {
+func initCluster(util *ConfigUtil) {
 	//优先选择用户运行时代码设置的
 	if util.Cluster != "" {
 		return
@@ -133,7 +133,7 @@ func initCluster(util *ConfitUtil) {
 	}
 }
 
-func initAppId(util *ConfitUtil) {
+func initAppId(util *ConfigUtil) {
 	//优先选择用户运行时代码设置的
 	if util.AppId != "" {
 		return
@@ -152,49 +152,49 @@ func initAppId(util *ConfitUtil) {
 	}
 }
 
-func initLongpollTimeout(util *ConfitUtil) {
+func initLongpollTimeout(util *ConfigUtil) {
 	longPollingTimeout, _ := util.configStartFile["longPollingTimeout"].(string)
 	if longPollingTimeout != "" {
 		util.LongPollingTimeout, _ = time.ParseDuration(longPollingTimeout)
 	}
 }
 
-func initLongPollInitDelay(util *ConfitUtil) {
+func initLongPollInitDelay(util *ConfigUtil) {
 	longPollingInitDelay, _ := util.configStartFile["longPollingInitDelay"].(string)
 	if longPollingInitDelay != "" {
 		util.LongPollingInitDelay, _ = time.ParseDuration(longPollingInitDelay)
 	}
 }
 
-func initMaxCacheSize(util *ConfitUtil) {
+func initMaxCacheSize(util *ConfigUtil) {
 	maxConfigCacheSize, _ := util.configStartFile["maxConfigCacheSize"].(float64)
 	if maxConfigCacheSize != 0 {
 		util.MaxConfigCacheSize = int(maxConfigCacheSize)
 	}
 }
 
-func initCacheExpireTime(util *ConfitUtil) {
+func initCacheExpireTime(util *ConfigUtil) {
 	configCacheExpireTime, _ := util.configStartFile["configCacheExpireTime"].(float64)
 	if configCacheExpireTime != 0 {
 		util.ConfigCacheExpireTime = int(configCacheExpireTime)
 	}
 }
 
-func initErrorRetry(util *ConfitUtil) {
+func initErrorRetry(util *ConfigUtil) {
 	onErrorRetryInterval, _ := util.configStartFile["onErrorRetryInterval"].(string)
 	if onErrorRetryInterval != "" {
 		util.HttpOnErrorRetryInterval, _ = time.ParseDuration(onErrorRetryInterval)
 	}
 }
 
-func initHttpTimeout(util *ConfitUtil) {
+func initHttpTimeout(util *ConfigUtil) {
 	connectTimeout, _ := util.configStartFile["httpTimeout"].(string)
 	if connectTimeout != "" {
 		util.HttpTimeout, _ = time.ParseDuration(connectTimeout)
 	}
 }
 
-func initRefreshTime(util *ConfitUtil) {
+func initRefreshTime(util *ConfigUtil) {
 	refreshInterval, _ := util.configStartFile["httpRefreshInterval"].(string)
 	if refreshInterval != "" {
 		util.HttpRefreshInterval, _ = time.ParseDuration(refreshInterval)

@@ -21,7 +21,7 @@ type AbstractConfig struct {
 	//add changeListener
 	configChangeListeners []ConfigChangeListener
 	InterestKeyMap        map[ConfigChangeListener][]string
-	configUtil            ConfitUtil
+	configUtil            ConfigUtil
 }
 
 /**

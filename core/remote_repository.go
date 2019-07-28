@@ -22,10 +22,10 @@ type RemoteConfigRepository struct {
 	lock                        sync.Mutex
 	ConfigNeedForceRefresh      bool
 	remoteConfigLongPollService *RemoteConfigLongPollService
-	configUtil                  ConfitUtil
+	configUtil                  ConfigUtil
 }
 
-func NewRemoteConfigRepository(Namespace string, configUtil ConfitUtil) *RemoteConfigRepository {
+func NewRemoteConfigRepository(Namespace string, configUtil ConfigUtil) *RemoteConfigRepository {
 	remoteConfigRepository := &RemoteConfigRepository{
 		Namespace:  Namespace,
 		configUtil: configUtil,

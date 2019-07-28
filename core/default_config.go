@@ -12,7 +12,7 @@ type DefaultConfig struct {
 	SourceType       ConfigSourceType
 }
 
-func NewDefaultConfig(nameSpace string, configReposity ConfigRepository, configUtil ConfitUtil) *DefaultConfig {
+func NewDefaultConfig(nameSpace string, configReposity ConfigRepository, configUtil ConfigUtil) *DefaultConfig {
 	defaultConfig := DefaultConfig{
 		Namespace:        nameSpace,
 		ConfigRepository: configReposity,

@@ -6,6 +6,12 @@ const (
 	JSON       = "json"
 	YML        = "yml"
 	YAML       = "yaml"
+	TXT 	   = "txt"
+
+)
+
+var (
+	ALL_FILEFORMAT = []string{PROPERTIES,XML,JSON,YAML,YML,TXT}
 )
 
 type ConfigFile interface {
@@ -39,5 +45,5 @@ type ConfigFile interface {
 	 * @param listener the config file change listener
 	 */
 
-	//AddChangeListener(listener ConfigFileChangeListener)
+	AddChangeListener(listener ConfigFileChangeListener)
 }

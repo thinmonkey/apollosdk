@@ -24,11 +24,11 @@ type RemoteConfigLongPollService struct {
 	longPollNamespace          map[string]*RemoteConfigRepository
 	notifications              map[string]int64
 	remoteNotificationMessages map[string]*ApolloNotificationMessages
-	configUtil                 ConfitUtil
+	configUtil                 ConfigUtil
 	sync.RWMutex
 }
 
-func NewRemoteConfigLongPollService(configUtil ConfitUtil) *RemoteConfigLongPollService {
+func NewRemoteConfigLongPollService(configUtil ConfigUtil) *RemoteConfigLongPollService {
 	return &RemoteConfigLongPollService{
 		schedulePolicy:             schedule.NewExponentialSchedulePolicy(configUtil.HttpOnErrorRetryInterval, configUtil.HttpOnErrorRetryInterval*8),
 		longPollNamespace:          make(map[string]*RemoteConfigRepository, 8),
