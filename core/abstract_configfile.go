@@ -10,12 +10,24 @@ import (
  */
 type AbstractConfigFile struct {
 	ConfigRepository ConfigRepository
-	Namespace string
-	Listeners []ConfigFileChangeListener
-	Properties *Properties
-	SourceType ConfigSourceType
+	Namespace        string
+	Listeners        []ConfigFileChangeListener
+	Properties       *Properties
+	SourceType       ConfigSourceType
 
-	rwMutex       sync.Mutex
+	rwMutex sync.Mutex
+}
+
+func NewAbstractConfigFile(namespace string, configRepository ConfigRepository) AbstractConfigFile {
+	abstractConfigFile := AbstractConfigFile{
+		Namespace:        namespace,
+		SourceType:       configRepository.getSourceType(),
+		Listeners:        make([]ConfigFileChangeListener, 0),
+		ConfigRepository: configRepository,
+		Properties:       configRepository.GetConfig(),
+	}
+	configRepository.AddChangeListener(&abstractConfigFile)
+	return abstractConfigFile
 }
 
 func (config *AbstractConfigFile) GetContent() string {
@@ -38,8 +50,8 @@ func (config *AbstractConfigFile) update(newProperties *Properties) {
 	panic("implement me")
 }
 
-func (config *AbstractConfigFile) AddChangeListener(listener ConfigFileChangeListener){
-	var isAdded  bool
+func (config *AbstractConfigFile) AddChangeListener(listener ConfigFileChangeListener) {
+	var isAdded bool
 	for _, value := range config.Listeners {
 		if reflect.DeepEqual(value, listener) {
 			isAdded = true
@@ -47,11 +59,11 @@ func (config *AbstractConfigFile) AddChangeListener(listener ConfigFileChangeLis
 		}
 	}
 	if !isAdded {
-		config.Listeners = append(config.Listeners,listener)
+		config.Listeners = append(config.Listeners, listener)
 	}
 }
 
-func (config *AbstractConfigFile) RemoveChangeListener(listener ConfigFileChangeListener) bool{
+func (config *AbstractConfigFile) RemoveChangeListener(listener ConfigFileChangeListener) bool {
 	index := -1
 	config.rwMutex.Lock()
 	defer config.rwMutex.Unlock()
@@ -68,7 +80,7 @@ func (config *AbstractConfigFile) RemoveChangeListener(listener ConfigFileChange
 	return false
 }
 
-func (config *AbstractConfigFile) OnRepositoryChange(namespace string, newProperties *Properties){
+func (config *AbstractConfigFile) OnRepositoryChange(namespace string, newProperties *Properties) {
 	if newProperties == config.Properties {
 		return
 	}
@@ -80,9 +92,9 @@ func (config *AbstractConfigFile) OnRepositoryChange(namespace string, newProper
 	config.update(newProperties)
 	config.SourceType = config.ConfigRepository.getSourceType()
 
-	 newValue := config.GetContent()
+	newValue := config.GetContent()
 
-	 changeType := MODIFIED
+	changeType := MODIFIED
 
 	if oldValue == "" {
 		changeType = ADDED
@@ -98,8 +110,8 @@ func (config *AbstractConfigFile) OnRepositoryChange(namespace string, newProper
 	})
 }
 
-func (config *AbstractConfigFile) fireConfigChange(changeEvent ConfigFileChangeEvent) ()  {
-	for _,listener := range config.Listeners{
+func (config *AbstractConfigFile) fireConfigChange(changeEvent ConfigFileChangeEvent) {
+	for _, listener := range config.Listeners {
 		go func() {
 			listener.OnChange(changeEvent)
 		}()

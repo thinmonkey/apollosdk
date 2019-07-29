@@ -10,11 +10,11 @@ const (
 type ConfigSourceType int
 
 type AbstractConfigRepository struct {
-	Listeners []*RepositoryChangeListener
+	Listeners []RepositoryChangeListener
 	rwMutex   sync.RWMutex
 }
 
-func (abstractConfigRepository *AbstractConfigRepository) AddChangeListener(listener *RepositoryChangeListener) {
+func (abstractConfigRepository *AbstractConfigRepository) AddChangeListener(listener RepositoryChangeListener) {
 	isAdd := false
 	for _, value := range abstractConfigRepository.Listeners {
 		if value == listener {
@@ -27,7 +27,7 @@ func (abstractConfigRepository *AbstractConfigRepository) AddChangeListener(list
 	}
 }
 
-func (abstractConfigRepository *AbstractConfigRepository) RemoveChangeListener(listener *RepositoryChangeListener) {
+func (abstractConfigRepository *AbstractConfigRepository) RemoveChangeListener(listener RepositoryChangeListener) {
 	index := -1
 	abstractConfigRepository.rwMutex.Lock()
 	defer abstractConfigRepository.rwMutex.Unlock()
@@ -44,6 +44,6 @@ func (abstractConfigRepository *AbstractConfigRepository) RemoveChangeListener(l
 
 func (abstractConfigRepository *AbstractConfigRepository) FireRepositoryChange(namespace string, newProperties *Properties) {
 	for _, value := range abstractConfigRepository.Listeners {
-		(*value).OnRepositoryChange(namespace, newProperties)
+		(value).OnRepositoryChange(namespace, newProperties)
 	}
 }

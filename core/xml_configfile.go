@@ -1,7 +1,13 @@
 package core
 
 type XmlConfigFile struct {
-	AbstractConfigFile
+	PlainTextConfigFile
+}
+
+func NewXmlConfigFile(namespace string, configRepository ConfigRepository) ConfigFile {
+	return &XmlConfigFile{
+		PlainTextConfigFile: NewPlainTextConfigFile(namespace, configRepository),
+	}
 }
 
 func (config *XmlConfigFile) GetConfigFileFormat() string {

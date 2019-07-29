@@ -11,13 +11,13 @@ type ConfigRepository interface {
 	 * Add change listener.
 	 * @param listener the listener to observe the changes
 	 */
-	AddChangeListener(listener *RepositoryChangeListener)
+	AddChangeListener(listener RepositoryChangeListener)
 
 	/**
 	 * Remove change listener.
 	 * @param listener the listener to remove
 	 */
-	RemoveChangeListener(listener *RepositoryChangeListener)
+	RemoveChangeListener(listener RepositoryChangeListener)
 
 	/**
    * Return the config's source type, i.e. where is the config loaded from
