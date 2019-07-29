@@ -10,20 +10,6 @@ const (
 
 )
 
-type ConfigFileFormat string
-
-func (ConfigFileFormat) Value() string {
-
-}
-
-func FromString(format string) ConfigFileFormat {
-
-}
-
-func IsValidFormat() bool  {
-
-}
-
 var (
 	FILE_FORMAT = []string{PROPERTIES,XML,JSON,YAML,YML,TXT}
 )

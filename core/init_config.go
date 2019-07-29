@@ -2,21 +2,37 @@ package core
 
 import (
 	"encoding/json"
+	"flag"
 	"github.com/thinmonkey/apollosdk/util"
 	"io/ioutil"
 	"os"
 	"time"
 )
 
+const (
+	APOLLO_CLUSTER_KEY = "apollo.cluster"
+)
+
+func init() {
+
+	flag.Int("apollo.loadConfigQPS",2,"apollo.loadConfigQPS")
+	flag.Int("apollo.longPollQPS",2,"apollo.longPollQPS")
+	flag.String(APOLLO_CLUSTER_KEY,"default",APOLLO_CLUSTER_KEY)
+}
+
 type ConfigUtil struct {
 	ApolloInitConfig
 	CacheInitConfig
 	HttpRefreshInterval      time.Duration
+	ConnectTimeout				time.Duration
+	ReadTimeout					time.Duration
 	HttpTimeout              time.Duration
 	HttpOnErrorRetryInterval time.Duration
 	LongPollingInitDelay     time.Duration
 	LongPollingTimeout       time.Duration
 	configStartFile          map[string]interface{}
+	LoadConfigQPS			int
+	LongPollQPS				int
 }
 
 type ApolloInitConfig struct {
@@ -75,7 +91,6 @@ func (cfg *ConfigUtil) resolveConfig(filename string) {
 }
 
 func initConfig(cfg *ConfigUtil) {
-	initRefreshTime(cfg)
 	initHttpTimeout(cfg)
 	initErrorRetry(cfg)
 	initCacheExpireTime(cfg)
@@ -194,9 +209,27 @@ func initHttpTimeout(util *ConfigUtil) {
 	}
 }
 
-func initRefreshTime(util *ConfigUtil) {
-	refreshInterval, _ := util.configStartFile["httpRefreshInterval"].(string)
-	if refreshInterval != "" {
-		util.HttpRefreshInterval, _ = time.ParseDuration(refreshInterval)
-	}
+func (cfg *ConfigUtil) initQPS() {
+	cfg.LoadConfigQPS = *flag.Int("apollo.loadConfigQPS",2,"apollo.loadConfigQPS")
+	cfg.LongPollQPS = *flag.Int("apollo.longPollQPS",2,"apollo.longPollQPS")
+}
+
+func (cfg *ConfigUtil) initLongPollingInitialDelayInMills() {
+	cfg.LongPollingInitDelay = *flag.Duration("apollo.longPollingInitialDelayInMills",2*time.Second,"apollo.longPollingInitialDelayInMills")
+}
+
+func (cfg *ConfigUtil) initMaxConfigCacheSize() {
+	cfg.MaxConfigCacheSize = *flag.Int("apollo.configCacheSize",500,"apollo.configCacheSize")
+}
+
+func (cfg *ConfigUtil) initReadTimeout() {
+	cfg.ReadTimeout = *flag.Duration("apollo.readTimeout",5*time.Second,"apollo.readTimeout")
+}
+
+func (cfg *ConfigUtil) initConnectTimeout() {
+	cfg.ConnectTimeout = *flag.Duration("apollo.connectTimeout",time.Second,"apollo.connectTimeout")
+}
+
+func (cfg *ConfigUtil) initRefreshTime() {
+	cfg.HttpRefreshInterval = *flag.Duration("apollo.refreshInterval",5*time.Second,"apollo config refreshInterval")
 }
