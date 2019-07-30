@@ -14,6 +14,27 @@ type AbstractConfigRepository struct {
 	rwMutex   sync.RWMutex
 }
 
+func (abstractConfigRepository *AbstractConfigRepository) GetConfig() Properties {
+	panic("implement me")
+}
+
+func (abstractConfigRepository *AbstractConfigRepository) GetSourceType() ConfigSourceType {
+	panic("implement me")
+}
+
+func (abstractConfigRepository *AbstractConfigRepository) SetUpstreamRepository(upstreamConfigRepository ConfigRepository) {
+	panic("implement me")
+}
+
+func (abstractConfigRepository *AbstractConfigRepository) trySync() bool{
+	abstractConfigRepository.sync()
+	return true
+}
+
+func (abstractConfigRepository *AbstractConfigRepository) sync(){
+	panic("implement me")
+}
+
 func (abstractConfigRepository *AbstractConfigRepository) AddChangeListener(listener RepositoryChangeListener) {
 	isAdd := false
 	for _, value := range abstractConfigRepository.Listeners {
@@ -42,7 +63,7 @@ func (abstractConfigRepository *AbstractConfigRepository) RemoveChangeListener(l
 	}
 }
 
-func (abstractConfigRepository *AbstractConfigRepository) FireRepositoryChange(namespace string, newProperties *Properties) {
+func (abstractConfigRepository *AbstractConfigRepository) FireRepositoryChange(namespace string, newProperties Properties) {
 	for _, value := range abstractConfigRepository.Listeners {
 		(value).OnRepositoryChange(namespace, newProperties)
 	}

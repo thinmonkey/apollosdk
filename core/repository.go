@@ -5,7 +5,7 @@ type ConfigRepository interface {
 	 * Get the config from this repository.
 	 * @return config
 	 */
-	GetConfig() *Properties
+	GetConfig() Properties
 
 	/**
 	 * Add change listener.
@@ -24,5 +24,11 @@ type ConfigRepository interface {
    *
    * @return the config's source type
    */
-	getSourceType() ConfigSourceType
+	GetSourceType() ConfigSourceType
+
+	/**
+   * Set the fallback repo for this repository.
+   * @param upstreamConfigRepository the upstream repo
+   */
+	SetUpstreamRepository(upstreamConfigRepository ConfigRepository)
 }

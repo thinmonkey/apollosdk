@@ -54,6 +54,13 @@ type ConfigFile interface {
 	GetConfigFileFormat() string
 
 	/**
+	* Return the config's source type, i.e. where is the config loaded from
+	*
+	* @return the config's source type
+	*/
+	GetSourceType() ConfigSourceType
+
+	/**
 	 * Add change listener to this config file instance.
 	 *
 	 * @param listener the config file change listener

@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-func ScheduleIntervalExecutor(refreshInterval time.Duration, f func()) {
+func ScheduleIntervalExecutor(refreshInterval time.Duration, f func() bool) {
 	go func() {
 		t2 := time.NewTimer(refreshInterval)
 		//long poll for sync

@@ -7,7 +7,7 @@ import (
 
 type YamlConfigFile struct {
 	PlainTextConfigFile
-	Properties *Properties
+	Properties Properties
 }
 
 func NewYamlConfigFile(namespace string, configRepository ConfigRepository) ConfigFile {
@@ -27,7 +27,7 @@ func (config *YamlConfigFile) tryTransformToProperties() bool {
 	return true
 }
 
-func (config *YamlConfigFile) update(newProperties *Properties) {
+func (config *YamlConfigFile) update(newProperties Properties) {
 	config.PlainTextConfigFile.update(newProperties)
 	config.transformToProperties()
 }
@@ -36,19 +36,19 @@ func (config *YamlConfigFile) transformToProperties() {
 	config.Properties = config.toProperties()
 }
 
-func (config *YamlConfigFile) toProperties() *Properties {
+func (config *YamlConfigFile) toProperties() Properties {
 	if !config.HasContent() {
-		return &Properties{}
+		return Properties{}
 	}
 	var properties *Properties
 	err := yaml.Unmarshal([]byte(config.GetContent()), properties)
 	if err != nil {
 		log.Printf("Parse yaml file content failed for namespace:%err", err)
 	}
-	return properties
+	return *properties
 }
 
-func (config *YamlConfigFile) AsProperties() *Properties {
+func (config *YamlConfigFile) AsProperties() Properties {
 	if config == nil {
 		config.transformToProperties()
 	}

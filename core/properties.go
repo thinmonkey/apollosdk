@@ -1,5 +1,7 @@
 package core
 
+import "fmt"
+
 type Properties map[string]string
 
 func (properties *Properties) StringPropertyNames() []string {
@@ -25,4 +27,12 @@ func (properties *Properties) Contain(key string) bool {
 		return ok
 	}
 	return false
+}
+
+func (properties *Properties) ToString() string {
+	var properString string
+	for key, value := range *properties {
+		properString = fmt.Sprintf("%s%s=%s\n", properString, key, value)
+	}
+	return properString[:len(properString)-1]
 }

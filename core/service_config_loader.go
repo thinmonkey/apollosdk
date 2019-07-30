@@ -28,8 +28,9 @@ func NewConfigServiceLoad(configUtil ConfigUtil) *ConfigServiceLoader {
 	return configServiceLoader
 }
 
-func (serviceLoader *ConfigServiceLoader) tryUpdateConfigServices() {
+func (serviceLoader *ConfigServiceLoader) tryUpdateConfigServices() bool {
 	serviceLoader.updateConfigServices()
+	return true
 }
 
 func (serviceLoader *ConfigServiceLoader) schedulePeriodicRefresh() {

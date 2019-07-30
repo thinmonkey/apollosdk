@@ -12,7 +12,7 @@ type AbstractConfigFile struct {
 	ConfigRepository ConfigRepository
 	Namespace        string
 	Listeners        []ConfigFileChangeListener
-	Properties       *Properties
+	Properties       Properties
 	SourceType       ConfigSourceType
 
 	rwMutex sync.Mutex
@@ -21,13 +21,17 @@ type AbstractConfigFile struct {
 func NewAbstractConfigFile(namespace string, configRepository ConfigRepository) AbstractConfigFile {
 	abstractConfigFile := AbstractConfigFile{
 		Namespace:        namespace,
-		SourceType:       configRepository.getSourceType(),
+		SourceType:       configRepository.GetSourceType(),
 		Listeners:        make([]ConfigFileChangeListener, 0),
 		ConfigRepository: configRepository,
 		Properties:       configRepository.GetConfig(),
 	}
 	configRepository.AddChangeListener(&abstractConfigFile)
 	return abstractConfigFile
+}
+
+func (config *AbstractConfigFile) GetSourceType() ConfigSourceType {
+	panic("implement me")
 }
 
 func (config *AbstractConfigFile) GetContent() string {
@@ -46,7 +50,7 @@ func (config *AbstractConfigFile) GetConfigFileFormat() string {
 	panic("implement me")
 }
 
-func (config *AbstractConfigFile) update(newProperties *Properties) {
+func (config *AbstractConfigFile) update(newProperties Properties) {
 	panic("implement me")
 }
 
@@ -80,17 +84,17 @@ func (config *AbstractConfigFile) RemoveChangeListener(listener ConfigFileChange
 	return false
 }
 
-func (config *AbstractConfigFile) OnRepositoryChange(namespace string, newProperties *Properties) {
-	if newProperties == config.Properties {
+func (config *AbstractConfigFile) OnRepositoryChange(namespace string, newProperties Properties) {
+	if reflect.DeepEqual(newProperties, config.Properties) {
 		return
 	}
 	var newConfigProperties Properties
-	newConfigProperties.PutAll(*newProperties)
+	newConfigProperties.PutAll(newProperties)
 
 	oldValue := config.GetContent()
 
 	config.update(newProperties)
-	config.SourceType = config.ConfigRepository.getSourceType()
+	config.SourceType = config.ConfigRepository.GetSourceType()
 
 	newValue := config.GetContent()
 
