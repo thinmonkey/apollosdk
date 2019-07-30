@@ -41,7 +41,11 @@ func (config *PlainTextConfigFile) HasContent() bool {
 	return config.Properties.Contain(CONFIG_FILE_CONTENT_KEY)
 }
 
-func (config *PlainTextConfigFile)  update(newProperties *Properties) {
+func (config *PlainTextConfigFile)  GetSourceType() ConfigSourceType {
+	return config.ConfigRepository.GetSourceType()
+}
+
+func (config *PlainTextConfigFile)  update(newProperties Properties) {
 	config.rwMutex.Lock()
 	defer config.rwMutex.Unlock()
 	config.Properties = newProperties

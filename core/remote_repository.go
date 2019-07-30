@@ -38,14 +38,14 @@ func NewRemoteConfigRepository(Namespace string, configUtil ConfigUtil) *RemoteC
 	return remoteConfigRepository
 }
 
-func (remoteConfigRepository *RemoteConfigRepository) GetConfig() *Properties {
+func (remoteConfigRepository *RemoteConfigRepository) GetConfig() Properties {
 	if remoteConfigRepository.ApolloConfig == nil {
 		remoteConfigRepository.sync()
 	}
 	if remoteConfigRepository.ApolloConfig != nil {
 		return remoteConfigRepository.transformApolloConfigToProperties(remoteConfigRepository.ApolloConfig)
 	}
-	return &Properties{}
+	return Properties{}
 }
 
 func (remoteConfigRepository *RemoteConfigRepository) sync() {
@@ -56,16 +56,16 @@ func (remoteConfigRepository *RemoteConfigRepository) sync() {
 	}
 }
 
-func (remoteConfigRepository *RemoteConfigRepository) getSourceType() ConfigSourceType {
+func (remoteConfigRepository *RemoteConfigRepository) GetSourceType() ConfigSourceType {
 	return REMOTE
 }
 
-func (remoteConfigRepository *RemoteConfigRepository) transformApolloConfigToProperties(config *ApolloConfig) *Properties {
+func (remoteConfigRepository *RemoteConfigRepository) transformApolloConfigToProperties(config *ApolloConfig) Properties {
 	result := Properties{}
 	for key, value := range config.Configurations {
 		result[key] = value
 	}
-	return &result
+	return result
 }
 
 func (remoteConfigRepository *RemoteConfigRepository) loadApolloConfig() (*ApolloConfig) {
@@ -178,10 +178,6 @@ func (remoteConfigRepository *RemoteConfigRepository) scheduleLongPollingRefresh
 
 func (remoteConfigRepository *RemoteConfigRepository) schedulePeriodicRefresh() {
 	util.ScheduleIntervalExecutor(remoteConfigRepository.configUtil.HttpRefreshInterval, remoteConfigRepository.trySync)
-}
-
-func (remoteConfigRepository *RemoteConfigRepository) trySync() {
-	remoteConfigRepository.sync()
 }
 
 func (remoteConfigRepository *RemoteConfigRepository) onLongPollNotified(longPollNotifiedServiceDto ServiceDto, remoteMessages ApolloNotificationMessages) {

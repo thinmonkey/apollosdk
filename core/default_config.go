@@ -2,11 +2,12 @@ package core
 
 import (
 	"os"
+	"reflect"
 )
 
 type DefaultConfig struct {
 	AbstractConfig
-	Properties       *Properties
+	Properties       Properties
 	ConfigRepository ConfigRepository
 	Namespace        string
 	SourceType       ConfigSourceType
@@ -50,12 +51,12 @@ func (defaultConfig *DefaultConfig) GetPropertyNames() []string {
 	return []string{}
 }
 
-func (defaultConfig *DefaultConfig) OnRepositoryChange(namespace string, newProperties *Properties) () {
-	if defaultConfig.Properties == newProperties {
+func (defaultConfig *DefaultConfig) OnRepositoryChange(namespace string, newProperties Properties) () {
+	if reflect.DeepEqual(defaultConfig.Properties,newProperties) {
 		return
 	}
 
-	actualChanges := defaultConfig.updateAndCalcConfigChanges(*newProperties, defaultConfig.ConfigRepository.getSourceType())
+	actualChanges := defaultConfig.updateAndCalcConfigChanges(newProperties, defaultConfig.ConfigRepository.GetSourceType())
 	if actualChanges == nil || len(actualChanges) == 0 {
 		return
 	}
@@ -63,12 +64,12 @@ func (defaultConfig *DefaultConfig) OnRepositoryChange(namespace string, newProp
 }
 
 func (defaultConfig *DefaultConfig) updateConfig(newProperties Properties, sourceType ConfigSourceType) {
-	defaultConfig.Properties = &newProperties
+	defaultConfig.Properties = newProperties
 	defaultConfig.SourceType = sourceType
 }
 
 func (defaultConfig *DefaultConfig) updateAndCalcConfigChanges(properties Properties, sourceType ConfigSourceType) map[string]ConfigChange {
-	configChanges := defaultConfig.calcPropertyChanges(defaultConfig.Namespace, *defaultConfig.Properties, properties)
+	configChanges := defaultConfig.calcPropertyChanges(defaultConfig.Namespace, defaultConfig.Properties, properties)
 
 	for _, change := range configChanges {
 		change.OldValue = string(defaultConfig.GetDefaultProterty(change.PropertyName, change.OldValue))

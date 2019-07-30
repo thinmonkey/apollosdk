@@ -39,8 +39,8 @@ func (manager *DefaultConfigManager) GetConfig(namespace string) core.Config {
 	if config, ok := manager.configs[namespace]; ok {
 		return config
 	}
-	lock.Lock()
-	defer lock.Unlock()
+	manager.lock.Lock()
+	defer manager.lock.Unlock()
 	config := core.NewDefaultConfig(namespace, core.NewRemoteConfigRepository(namespace, ConfitUtil), ConfitUtil)
 	if config != nil {
 		manager.configs[namespace] = config
@@ -55,8 +55,8 @@ func (manager *DefaultConfigManager) GetConfigFile(namespace string, configFileF
 		return configFile
 	}
 
-	lock.Lock()
-	defer lock.Unlock()
+	manager.lock.Lock()
+	defer manager.lock.Unlock()
 
 	configFile := GetConfigFactory().CreateConfigFile(namespaceFileName, configFileFormat)
 	if configFile != nil {
