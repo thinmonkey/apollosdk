@@ -13,8 +13,6 @@ const (
 )
 
 var (
-	configMap  = make(map[string]*core.Config, 10)
-	lock       sync.Mutex
 	ConfitUtil core.ConfigUtil
 	once       sync.Once
 )
@@ -49,29 +47,21 @@ func StartWithCusConfig(configFile string) {
 	})
 }
 
+/**
+@param namespace
+获取namespace配置
+ */
 func GetConfig(namespace string) core.Config {
-	lock.Lock()
-	defer lock.Unlock()
-	config, ok := configMap[namespace]
-
-	if !ok {
-		remoteRepository := core.NewRemoteConfigRepository(namespace, ConfitUtil)
-
-		repository := core.ConfigRepository(remoteRepository)
-
-		defaultConfig := core.NewDefaultConfig(namespace, repository, ConfitUtil)
-
-		config := core.Config(defaultConfig)
-		configMap[namespace] = &config
-		return config
-	}
-	return *config
+	return ConfigManagerInstance.GetConfig(namespace)
 }
 
+/**
+获取默认的配置
+ */
 func GetAppConfig() core.Config {
 	return GetConfig(NAMESPACE_APPLICATION)
 }
 
-func GetConfigFile(namespace string,configFileFormat core.ConfigSourceType) core.ConfigFile {
-	return
+func GetConfigFile(namespace string,configFileFormat string) core.ConfigFile {
+	return ConfigManagerInstance.GetConfigFile(namespace,configFileFormat)
 }
