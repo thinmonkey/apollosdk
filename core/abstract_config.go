@@ -25,24 +25,24 @@ type AbstractConfig struct {
 }
 
 /**
-  * Return the property value with the given key, or {@code defaultValue} if the key doesn't exist.
-  *
-  * @param key          the property name
-  * @param defaultValue the default value when key is not found or any error occurred
-  * @return the property value
-  */
+ * Return the property value with the given key, or {@code defaultValue} if the key doesn't exist.
+ *
+ * @param key          the property name
+ * @param defaultValue the default value when key is not found or any error occurred
+ * @return the property value
+ */
 //func (config *AbstractConfig) GetProperty {
 //	return ""
 //}
 
 /**
-  * Return the long property value with the given key, or {@code defaultValue} if the key doesn't
-  * exist.
-  *
-  * @param key          the property name
-  * @param defaultValue the default value when key is not found or any error occurred
-  * @return the property value as long
-  */
+ * Return the long property value with the given key, or {@code defaultValue} if the key doesn't
+ * exist.
+ *
+ * @param key          the property name
+ * @param defaultValue the default value when key is not found or any error occurred
+ * @return the property value as long
+ */
 //func (config *AbstractConfig) GetLongProperty(key string, defaultValue int64) int64 {
 //	if config.cache == nil {
 //		config.cache = newCache()
@@ -56,12 +56,12 @@ type AbstractConfig struct {
 //}
 
 /**
-  * Return the property value with the given key, or {@code defaultValue} if the key doesn't exist.
-  *
-  * @param key          the property name
-  * @param defaultValue the default value when key is not found or any error occurred
-  * @return the property value
-  */
+ * Return the property value with the given key, or {@code defaultValue} if the key doesn't exist.
+ *
+ * @param key          the property name
+ * @param defaultValue the default value when key is not found or any error occurred
+ * @return the property value
+ */
 func (config *AbstractConfig) GetStringProperty(key string, defaultValue string) string {
 	if config.cache == nil {
 		config.cache = config.newCache()
@@ -76,13 +76,13 @@ func (config *AbstractConfig) GetStringProperty(key string, defaultValue string)
 }
 
 /**
-  * Return the integer property value with the given key, or {@code defaultValue} if the key
-  * doesn't exist.
-  *
-  * @param key          the property name
-  * @param defaultValue the default value when key is not found or any error occurred
-  * @return the property value as integer
-  */
+ * Return the integer property value with the given key, or {@code defaultValue} if the key
+ * doesn't exist.
+ *
+ * @param key          the property name
+ * @param defaultValue the default value when key is not found or any error occurred
+ * @return the property value as integer
+ */
 func (config *AbstractConfig) GetIntProperty(key string, defaultValue int) int {
 	if config.cache == nil {
 		config.cache = config.newCache()
@@ -100,13 +100,13 @@ func (config *AbstractConfig) GetIntProperty(key string, defaultValue int) int {
 }
 
 /**
-   * Return the float property value with the given key, or {@code defaultValue} if the key doesn't
-   * exist.
-   *
-   * @param key          the property name
-   * @param defaultValue the default value when key is not found or any error occurred
-   * @return the property value as float
-   */
+ * Return the float property value with the given key, or {@code defaultValue} if the key doesn't
+ * exist.
+ *
+ * @param key          the property name
+ * @param defaultValue the default value when key is not found or any error occurred
+ * @return the property value as float
+ */
 func (config *AbstractConfig) GetFloatProperty(key string, defaultValue float32) float32 {
 	if config.cache == nil {
 		config.cache = config.newCache()
@@ -128,13 +128,13 @@ func (config *AbstractConfig) GetPropertyNames() []string {
 }
 
 /**
-   * Return the double property value with the given key, or {@code defaultValue} if the key doesn't
-   * exist.
-   *
-   * @param key          the property name
-   * @param defaultValue the default value when key is not found or any error occurred
-   * @return the property value as double
-   */
+ * Return the double property value with the given key, or {@code defaultValue} if the key doesn't
+ * exist.
+ *
+ * @param key          the property name
+ * @param defaultValue the default value when key is not found or any error occurred
+ * @return the property value as double
+ */
 func (config *AbstractConfig) GetDoubleProperty(key string, defaultValue float64) float64 {
 	if config.cache == nil {
 		config.cache = config.newCache()
@@ -152,13 +152,13 @@ func (config *AbstractConfig) GetDoubleProperty(key string, defaultValue float64
 }
 
 /**
-  * Return the byte property value with the given key, or {@code defaultValue} if the key doesn't
-  * exist.
-  *
-  * @param key          the property name
-  * @param defaultValue the default value when key is not found or any error occurred
-  * @return the property value as byte
-  */
+ * Return the byte property value with the given key, or {@code defaultValue} if the key doesn't
+ * exist.
+ *
+ * @param key          the property name
+ * @param defaultValue the default value when key is not found or any error occurred
+ * @return the property value as byte
+ */
 //func (config *AbstractConfig) GetByteProperty(key string, defaultValue byte) byte {
 //	if config.cache == nil {
 //		config.cache = newCache()
@@ -191,12 +191,12 @@ func (config *AbstractConfig) GetBoolProperty(key string, defaultValue bool) boo
 }
 
 /**
-   * Return the array property value with the given key, or {@code defaultValue} if the key doesn't exist.
-   *
-   * @param key          the property name
-   * @param delimiter    the delimiter regex
-   * @param defaultValue the default value when key is not found or any error occurred
-   */
+ * Return the array property value with the given key, or {@code defaultValue} if the key doesn't exist.
+ *
+ * @param key          the property name
+ * @param delimiter    the delimiter regex
+ * @param defaultValue the default value when key is not found or any error occurred
+ */
 func (config *AbstractConfig) GetArrayProperty(key string, delimiter string, defaultValue []string) []string {
 	if config.cache == nil {
 		config.cache = config.newCache()
@@ -211,14 +211,14 @@ func (config *AbstractConfig) GetArrayProperty(key string, delimiter string, def
 }
 
 /**
-   * Return the Date property value with the given name, or {@code defaultValue} if the name doesn't exist.
-   * Will try to parse the date with Locale.US and formats as follows: yyyy-MM-dd HH:mm:ss.SSS,
-   * yyyy-MM-dd HH:mm:ss and yyyy-MM-dd
-   *
-   * @param key          the property name
-   * @param defaultValue the default value when name is not found or any error occurred
-   * @return the property value
-   */
+ * Return the Date property value with the given name, or {@code defaultValue} if the name doesn't exist.
+ * Will try to parse the date with Locale.US and formats as follows: yyyy-MM-dd HH:mm:ss.SSS,
+ * yyyy-MM-dd HH:mm:ss and yyyy-MM-dd
+ *
+ * @param key          the property name
+ * @param defaultValue the default value when name is not found or any error occurred
+ * @return the property value
+ */
 //func (config *AbstractConfig) GetDateProperty(key string, defaultValue time.Time) time.Time {
 //	if config.cache == nil {
 //		config.cache = newCache()
@@ -227,15 +227,15 @@ func (config *AbstractConfig) GetArrayProperty(key string, delimiter string, def
 //}
 
 /**
-  * Return the Date property value with the given name, or {@code defaultValue} if the name doesn't exist.
-  *
-  * @param key          the property name
-  * @param format       the date format, see {@link java.text.SimpleDateFormat} for more
-  *                     information
-  * @param locale       the locale to use
-  * @param defaultValue the default value when name is not found or any error occurred
-  * @return the property value
-  */
+ * Return the Date property value with the given name, or {@code defaultValue} if the name doesn't exist.
+ *
+ * @param key          the property name
+ * @param format       the date format, see {@link java.text.SimpleDateFormat} for more
+ *                     information
+ * @param locale       the locale to use
+ * @param defaultValue the default value when name is not found or any error occurred
+ * @return the property value
+ */
 //func (config *AbstractConfig) GetDateFormatProperty(key string, format string, defaultValue time.Time) time.Time {
 //	if config.cache == nil {
 //		config.cache = newCache()
@@ -261,15 +261,15 @@ func (config *AbstractConfig) clearConfigCache() {
 }
 
 /**
-   * Return the Date property value with the given name, or {@code defaultValue} if the name doesn't exist.
-   *
-   * @param key          the property name
-   * @param format       the date format, see {@link java.text.SimpleDateFormat} for more
-   *                     information
-   * @param locale       the locale to use
-   * @param defaultValue the default value when name is not found or any error occurred
-   * @return the property value
-   */
+ * Return the Date property value with the given name, or {@code defaultValue} if the name doesn't exist.
+ *
+ * @param key          the property name
+ * @param format       the date format, see {@link java.text.SimpleDateFormat} for more
+ *                     information
+ * @param locale       the locale to use
+ * @param defaultValue the default value when name is not found or any error occurred
+ * @return the property value
+ */
 //func (config *AbstractConfig) GetDateFormatLocaleProperty(key string, format string, locale time.Location, defalutValue time.Time) time.Time {
 //	if config.cache == nil {
 //		config.cache = newCache()
@@ -305,7 +305,7 @@ func (config *AbstractConfig) clearConfigCache() {
 * Add change listener to this config instance, will be notified when any key is changed in this namespace.
 *
 * @param listener the config change listener
-*/
+ */
 func (config *AbstractConfig) AddChangeListener(listener ConfigChangeListener) {
 	if config.cache == nil {
 		config.cache = config.newCache()
@@ -358,7 +358,9 @@ func (config *AbstractConfig) AddChangeListenerInterestedKeys(listener ConfigCha
 	if !isAdd {
 		config.configChangeListeners = append(config.configChangeListeners, listener)
 		if interestedKeys != nil && len(interestedKeys) > 0 {
-			config.InterestKeyMap[listener] = interestedKeys
+			//go-sdk升级后，原先代码在当前版本有问题
+			//目前未用到该功能， 暂时注释掉,修复待定
+			//config.InterestKeyMap[listener] = interestedKeys
 		}
 	}
 }
