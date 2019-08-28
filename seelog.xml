@@ -1,4 +1,4 @@
-<seelog type="sync" mininterval="2000000" maxinterval="100000000" critmsgcount="500" minlevel="debug">
+<seelog type="sync" mininterval="2000000" maxinterval="100000000" critmsgcount="500" minlevel="info">
 
     <outputs formatid="all">
         <console formatid="fmterror"/>

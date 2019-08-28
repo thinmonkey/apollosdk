@@ -1,26 +1,19 @@
-package apollosdk
+package main
 
 import (
-	"testing"
-	"github.com/thinmonkey/apollosdk/core"
 	"fmt"
+	"github.com/thinmonkey/apollosdk"
+	"github.com/thinmonkey/apollosdk/core"
 )
 
+func main() {
+	apollosdk.SetDebug(true)
+	apollosdk.Start("app-capability","default","http://10.160.2.153:8083","")
+	//apollosdk.StartWithCusConfig("./util/config.json")
 
-func TestGetConfig(t *testing.T) {
+	configNew := apollosdk.GetConfig("app.tc.mat.disable")
 
-	fmt.Println("TestGetConfig")
-
-	//Start("aaa","aaa","aaa","aa","aaa")
-
-	//config := GetAppConfig()
-	//t.Log(config.GetStringProperty("test",""))
-
-	//chanEvent := (*config).GetChangeKeyNotify()
-
-	configNew := GetConfig("app.tc.mat.disable")
-
-	t.Log(configNew.GetStringProperty("mats", ""))
+	//t.Log(configNew.GetStringProperty("mats", ""))
 
 	//定义变量来监听
 	var varFunc core.OnChangeFunc =  func (changeEvent core.ConfigChangeEvent)  {
@@ -40,7 +33,6 @@ func TestGetConfig(t *testing.T) {
 	chan1 :=make(chan int)
 	<-chan1
 }
-
 
 
 type SomeThing string

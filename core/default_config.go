@@ -1,6 +1,8 @@
 package core
 
-import "os"
+import (
+	"os"
+)
 
 type DefaultConfig struct {
 	AbstractConfig
@@ -10,16 +12,17 @@ type DefaultConfig struct {
 	SourceType       ConfigSourceType
 }
 
-func NewDefaultConfig(nameSpace string, configReposity *ConfigRepository) *DefaultConfig {
+func NewDefaultConfig(nameSpace string, configReposity ConfigRepository, configUtil ConfitUtil) *DefaultConfig {
 	defaultConfig := DefaultConfig{
 		Namespace:        nameSpace,
-		ConfigRepository: *configReposity,
-		Properties:       (*configReposity).GetConfig(),
+		ConfigRepository: configReposity,
+		Properties:       configReposity.GetConfig(),
 	}
 	defaultConfig.AbstractConfig = AbstractConfig{
 		configChangeListeners: make([]ConfigChangeListener, 0),
 		InterestKeyMap:        make(map[ConfigChangeListener][]string, 0),
 		GetProperty:           defaultConfig.GetDefaultProterty,
+		configUtil:            configUtil,
 	}
 
 	configChangeListener := RepositoryChangeListener(&defaultConfig)
@@ -53,7 +56,7 @@ func (defaultConfig *DefaultConfig) OnRepositoryChange(namespace string, newProp
 		return
 	}
 
-	actualChanges := defaultConfig.updateAndCalcConfigChanges(*newProperties, defaultConfig.ConfigRepository.GetSourceType())
+	actualChanges := defaultConfig.updateAndCalcConfigChanges(*newProperties, defaultConfig.ConfigRepository.getSourceType())
 	if actualChanges == nil || len(actualChanges) == 0 {
 		return
 	}

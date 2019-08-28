@@ -3,7 +3,7 @@ package schedule
 import (
 	"time"
 
-	"github.com/zhhao226/apollosdk/util"
+	"github.com/thinmonkey/apollosdk/util"
 )
 
 type ExponentialSchedulePolicy struct {

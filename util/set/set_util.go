@@ -1,6 +1,30 @@
 package set
 
-func DifferenceMapKeys(preProperties map[string]interface{}, curProperties map[string]interface{}) []string {
+/**
+找到两个slice的交集元素slice
+ */
+func Intersection(pre []string, cur []string) []string {
+	if pre == nil || cur == nil {
+		return nil
+	}
+	preMap := covertSliceToMap(pre)
+	curMap := covertSliceToMap(cur)
+	return intersectionMapKeys(preMap, curMap)
+}
+
+/**
+找到pre slice与cur slice不同的元素slice
+ */
+func Difference(pre []string, cur []string) []string {
+	if pre == nil || cur == nil {
+		return nil
+	}
+	preMap := covertSliceToMap(pre)
+	curMap := covertSliceToMap(cur)
+	return differenceMapKeys(preMap, curMap)
+}
+
+func differenceMapKeys(preProperties map[string]interface{}, curProperties map[string]interface{}) []string {
 	diffKeys := make([]string, 10)
 	for key := range curProperties {
 		if _, ok := preProperties[key]; !ok {
@@ -15,7 +39,7 @@ func DifferenceMapKeys(preProperties map[string]interface{}, curProperties map[s
 	return diffKeys
 }
 
-func IntersectionMapKeys(preProperties map[string]interface{}, curProperties map[string]interface{}) []string {
+func intersectionMapKeys(preProperties map[string]interface{}, curProperties map[string]interface{}) []string {
 	commKeys := make([]string, 0)
 	for key := range preProperties {
 		for key2 := range curProperties {
@@ -28,32 +52,13 @@ func IntersectionMapKeys(preProperties map[string]interface{}, curProperties map
 	return commKeys
 }
 
-func Intersection(pre []string, cur []string) []string {
-	if pre == nil || cur == nil {
+func covertSliceToMap(pre []string) map[string]interface{} {
+	if pre == nil {
 		return nil
 	}
 	preMap := make(map[string]interface{}, len(pre))
-	curMap := make(map[string]interface{}, len(cur))
 	for index, value := range pre {
 		preMap[value] = index
 	}
-	for index, value := range cur {
-		curMap[value] = index
-	}
-	return IntersectionMapKeys(preMap, curMap)
-}
-
-func Difference(pre []string, cur []string) []string {
-	if pre == nil || cur == nil {
-		return nil
-	}
-	preMap := make(map[string]interface{}, len(pre))
-	curMap := make(map[string]interface{}, len(cur))
-	for index, value := range pre {
-		preMap[value] = index
-	}
-	for index, value := range cur {
-		curMap[value] = index
-	}
-	return DifferenceMapKeys(preMap, curMap)
+	return preMap
 }

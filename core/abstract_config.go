@@ -2,8 +2,8 @@ package core
 
 import (
 	"github.com/coocood/freecache"
-	"github.com/zhhao226/apollosdk/util"
-	"github.com/zhhao226/apollosdk/util/set"
+	"github.com/thinmonkey/apollosdk/util"
+	"github.com/thinmonkey/apollosdk/util/set"
 	"reflect"
 	"strconv"
 	"strings"
@@ -21,6 +21,7 @@ type AbstractConfig struct {
 	//add changeListener
 	configChangeListeners []ConfigChangeListener
 	InterestKeyMap        map[ConfigChangeListener][]string
+	configUtil            ConfitUtil
 }
 
 /**
@@ -63,7 +64,7 @@ type AbstractConfig struct {
  */
 func (config *AbstractConfig) GetStringProperty(key string, defaultValue string) string {
 	if config.cache == nil {
-		config.cache = newCache()
+		config.cache = config.newCache()
 	}
 	result := config.getValueFromCache(key)
 	if result != nil && len(result) > 0 {
@@ -84,13 +85,13 @@ func (config *AbstractConfig) GetStringProperty(key string, defaultValue string)
  */
 func (config *AbstractConfig) GetIntProperty(key string, defaultValue int) int {
 	if config.cache == nil {
-		config.cache = newCache()
+		config.cache = config.newCache()
 	}
 	result := config.getValueFromCache(key)
 	if result != nil && len(result) > 0 {
 		value, err := strconv.Atoi(string(result))
 		if err != nil {
-			util.Logger.Error("string convert to int err:", err)
+			util.DebugPrintf("string convert to int err:", err)
 		}
 		return value
 	}
@@ -108,13 +109,13 @@ func (config *AbstractConfig) GetIntProperty(key string, defaultValue int) int {
  */
 func (config *AbstractConfig) GetFloatProperty(key string, defaultValue float32) float32 {
 	if config.cache == nil {
-		config.cache = newCache()
+		config.cache = config.newCache()
 	}
 	result := config.getValueFromCache(key)
 	if result != nil && len(result) > 0 {
 		value, err := strconv.ParseFloat(string(result), 32)
 		if err != nil {
-			util.Logger.Error("string convert to float32 err:", err)
+			util.DebugPrintf("string convert to float32 err:", err)
 		}
 		return float32(value)
 	}
@@ -136,13 +137,13 @@ func (config *AbstractConfig) GetPropertyNames() []string {
  */
 func (config *AbstractConfig) GetDoubleProperty(key string, defaultValue float64) float64 {
 	if config.cache == nil {
-		config.cache = newCache()
+		config.cache = config.newCache()
 	}
 	result := config.getValueFromCache(key)
 	if result != nil && len(result) > 0 {
 		value, err := strconv.ParseFloat(string(result), 64)
 		if err != nil {
-			util.Logger.Error("string convert to float32 err:", err)
+			util.DebugPrintf("string convert to float32 err:", err)
 		}
 		return value
 	}
@@ -175,13 +176,13 @@ func (config *AbstractConfig) GetDoubleProperty(key string, defaultValue float64
  */
 func (config *AbstractConfig) GetBoolProperty(key string, defaultValue bool) bool {
 	if config.cache == nil {
-		config.cache = newCache()
+		config.cache = config.newCache()
 	}
 	result := config.getValueFromCache(key)
 	if result != nil && len(result) > 0 {
 		value, err := strconv.ParseBool(string(result))
 		if err != nil {
-			util.Logger.Error("string convert to bool err:", err)
+			util.DebugPrintf("string convert to bool err:", err)
 		}
 		return value
 	}
@@ -198,7 +199,7 @@ func (config *AbstractConfig) GetBoolProperty(key string, defaultValue bool) boo
  */
 func (config *AbstractConfig) GetArrayProperty(key string, delimiter string, defaultValue []string) []string {
 	if config.cache == nil {
-		config.cache = newCache()
+		config.cache = config.newCache()
 	}
 	result := config.getValueFromCache(key)
 	if result != nil && len(result) > 0 {
@@ -242,15 +243,19 @@ func (config *AbstractConfig) GetArrayProperty(key string, delimiter string, def
 //	return time.Time{}
 //}
 
-func newCache() *freecache.Cache {
-	cache := freecache.NewCache(util.MaxConfigCacheSize)
+func (config *AbstractConfig) newCache() *freecache.Cache {
+	cache := freecache.NewCache(config.configUtil.MaxConfigCacheSize)
 	return cache
 }
 
 func (config *AbstractConfig) clearConfigCache() {
 	config.rwMutex.Lock()
 	defer config.rwMutex.Unlock()
-	config.cache.Clear()
+	if config.cache != nil {
+		config.cache.Clear()
+	} else {
+		config.newCache()
+	}
 	config.ConfigVersion = config.ConfigVersion + 1
 
 }
@@ -303,7 +308,7 @@ func (config *AbstractConfig) clearConfigCache() {
  */
 func (config *AbstractConfig) AddChangeListener(listener ConfigChangeListener) {
 	if config.cache == nil {
-		config.cache = newCache()
+		config.cache = config.newCache()
 	}
 	config.AddChangeListenerInterestedKeys(listener, nil)
 }
@@ -402,7 +407,7 @@ func (config *AbstractConfig) getValueFromPropertiesAndSaveCache(key string) []b
 	if result != nil {
 		config.rwMutex.Lock()
 		if config.ConfigVersion == currentVersion {
-			config.cache.Set([]byte(key), result, util.ConfigCacheExpireTime)
+			config.cache.Set([]byte(key), result, config.configUtil.ConfigCacheExpireTime)
 		}
 		config.rwMutex.Unlock()
 		return result

@@ -1,15 +1,14 @@
 package http
 
 import (
-	"net/http"
+	"github.com/thinmonkey/apollosdk/util"
 	"io/ioutil"
-	"errors"
-	"github.com/zhhao226/apollosdk/util"
+	"net/http"
 )
 
 func Request(request HttpRequest) (*HttpResponse, error) {
 	client := &http.Client{
-		Timeout: request.ConnectTimeout,
+		Timeout:request.ConnectTimeout,
 	}
 
 	var responseBody []byte
@@ -17,30 +16,21 @@ func Request(request HttpRequest) (*HttpResponse, error) {
 	res, err := client.Get(request.Url)
 
 	if res == nil || err != nil {
-		util.Logger.Error("Connect Apollo Server Fail,Error:", err)
-		return nil, err
+		util.DebugPrintf("Connect Apollo Server Fail,Error:%v", err)
+		return nil, util.ApolloConfigError{Message: err.Error()}
 	}
 
-	//not modified break
-	switch res.StatusCode {
-	case http.StatusOK:
-		responseBody, err = ioutil.ReadAll(res.Body)
-		defer res.Body.Close()
-		if err != nil {
-			util.Logger.Error("Connect Apollo Server Fail,Error:", err)
-			return nil, err
-		} else {
-			return &HttpResponse{http.StatusOK, responseBody}, nil
-		}
-	case http.StatusNotModified:
-		return &HttpResponse{http.StatusNotModified, nil}, nil
-	default:
-		util.Logger.Error("Connect Apollo Server Fail,Error:", err)
-		if res != nil {
-			util.Logger.Error("Connect Apollo Server Fail,StatusCode:", res.StatusCode)
-		}
-		err = errors.New("Connect Apollo Server Fail!")
-		// if error then sleep
-		return nil, err
+	responseBody, err = ioutil.ReadAll(res.Body)
+	defer res.Body.Close()
+	if err != nil {
+		util.DebugPrintf("Read Apollo Server Body Fail,Error:", err)
+		return nil, util.ApolloConfigError{Message: err.Error()}
 	}
+
+	if res.StatusCode == http.StatusOK || res.StatusCode == http.StatusNotModified {
+		return &HttpResponse{res.StatusCode, responseBody}, nil
+	}
+	err = util.ApolloConfigStatusCodeError{StatusCode: res.StatusCode, Message: string(responseBody)}
+	util.DebugPrintf("Apollo Server httpResponse error:", err.Error())
+	return nil, err
 }

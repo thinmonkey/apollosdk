@@ -1,15 +1,15 @@
 package core
 
 import (
-	"sync"
-	"time"
+	"encoding/json"
 	"fmt"
+	"github.com/thinmonkey/apollosdk/util"
+	"github.com/thinmonkey/apollosdk/util/http"
+	"github.com/thinmonkey/apollosdk/util/schedule"
 	"net/url"
 	"strings"
-	"encoding/json"
-	"github.com/zhhao226/apollosdk/util/schedule"
-	"github.com/zhhao226/apollosdk/util/http"
-	"github.com/zhhao226/apollosdk/util"
+	"sync"
+	"time"
 )
 
 type RemoteConfigRepository struct {
@@ -22,14 +22,16 @@ type RemoteConfigRepository struct {
 	lock                        sync.Mutex
 	ConfigNeedForceRefresh      bool
 	remoteConfigLongPollService *RemoteConfigLongPollService
+	configUtil                  ConfitUtil
 }
 
-func NewRemoteConfigRepository(Namespace string) *RemoteConfigRepository {
+func NewRemoteConfigRepository(Namespace string, configUtil ConfitUtil) *RemoteConfigRepository {
 	remoteConfigRepository := &RemoteConfigRepository{
-		Namespace: Namespace,
+		Namespace:  Namespace,
+		configUtil: configUtil,
 	}
-	remoteConfigRepository.remoteConfigLongPollService = NewRemoteConfigLongPollService()
-	remoteConfigRepository.schedulePolicy = schedule.NewExponentialSchedulePolicy(util.OnErrorRetryInterval, util.OnErrorRetryInterval*8)
+	remoteConfigRepository.remoteConfigLongPollService = NewRemoteConfigLongPollService(configUtil)
+	remoteConfigRepository.schedulePolicy = schedule.NewExponentialSchedulePolicy(configUtil.HttpOnErrorRetryInterval, configUtil.HttpOnErrorRetryInterval*8)
 	remoteConfigRepository.trySync()
 	remoteConfigRepository.schedulePeriodicRefresh()
 	remoteConfigRepository.scheduleLongPollingRefresh()
@@ -40,18 +42,21 @@ func (remoteConfigRepository *RemoteConfigRepository) GetConfig() *Properties {
 	if remoteConfigRepository.ApolloConfig == nil {
 		remoteConfigRepository.sync()
 	}
-	return remoteConfigRepository.transformApolloConfigToProperties(remoteConfigRepository.ApolloConfig)
+	if remoteConfigRepository.ApolloConfig != nil {
+		return remoteConfigRepository.transformApolloConfigToProperties(remoteConfigRepository.ApolloConfig)
+	}
+	return &Properties{}
 }
 
 func (remoteConfigRepository *RemoteConfigRepository) sync() {
-	currentApolloConfig, _ := remoteConfigRepository.loadApolloConfig()
+	currentApolloConfig := remoteConfigRepository.loadApolloConfig()
 	if currentApolloConfig != remoteConfigRepository.ApolloConfig {
 		remoteConfigRepository.ApolloConfig = currentApolloConfig
 		remoteConfigRepository.FireRepositoryChange(remoteConfigRepository.Namespace, remoteConfigRepository.GetConfig())
 	}
 }
 
-func (remoteConfigRepository *RemoteConfigRepository) GetSourceType() ConfigSourceType {
+func (remoteConfigRepository *RemoteConfigRepository) getSourceType() ConfigSourceType {
 	return REMOTE
 }
 
@@ -63,11 +68,11 @@ func (remoteConfigRepository *RemoteConfigRepository) transformApolloConfigToPro
 	return &result
 }
 
-func (remoteConfigRepository *RemoteConfigRepository) loadApolloConfig() (*ApolloConfig, error) {
+func (remoteConfigRepository *RemoteConfigRepository) loadApolloConfig() (*ApolloConfig) {
 
-	appId := util.GetAppId()
-	cluster := util.GetCluster()
-	dataServer := util.GetDateCenter()
+	appId := remoteConfigRepository.configUtil.AppId
+	cluster := remoteConfigRepository.configUtil.Cluster
+	dataCenter := remoteConfigRepository.configUtil.DataCenter
 	var maxRetry int
 	if remoteConfigRepository.ConfigNeedForceRefresh {
 		maxRetry = 2
@@ -77,42 +82,51 @@ func (remoteConfigRepository *RemoteConfigRepository) loadApolloConfig() (*Apoll
 
 	var onErrorSleepTime time.Duration
 	configServices := remoteConfigRepository.getConfigServices()
+	if configServices == nil {
+		util.DebugPrintf("serviceDto must not null")
+		return nil
+	}
+
 	for i := 0; i < maxRetry; i++ {
 		for _, serviceDto := range configServices {
 			if onErrorSleepTime > 0 {
 				time.Sleep(onErrorSleepTime)
 			}
-			url := assembleQueryConfigUrl(serviceDto.HomePageUrl, appId, cluster, remoteConfigRepository.Namespace, dataServer,
+			url := assembleQueryConfigUrl(serviceDto.HomePageUrl, appId, cluster, remoteConfigRepository.Namespace, dataCenter,
 				remoteConfigRepository.RemoteMessages, remoteConfigRepository.ApolloConfig)
 			httpRequest := http.HttpRequest{
 				Url:            url,
-				ConnectTimeout: util.ConnectTimeout,
+				ConnectTimeout: remoteConfigRepository.configUtil.HttpTimeout,
 			}
 			httpResponse, err := http.Request(httpRequest)
 			if err != nil {
 				onErrorSleepTime = remoteConfigRepository.calErrorSleepTime()
-				return nil, err
+				util.DebugPrintf("loadApolloConfig http err:",err)
+				continue
 			}
+			util.DebugPrintf("remote_repository response,statusCode:%d,body:%s,url: %s", httpResponse.StatusCode,httpResponse.ReponseBody,url)
 			remoteConfigRepository.ConfigNeedForceRefresh = false
 			remoteConfigRepository.schedulePolicy.Success()
 			if httpResponse.StatusCode == 304 {
-				return remoteConfigRepository.ApolloConfig, nil
+				return remoteConfigRepository.ApolloConfig
 			}
 
 			var newApolloConfig ApolloConfig
 			err = json.Unmarshal(httpResponse.ReponseBody, &newApolloConfig)
 			if err != nil {
-				return nil, err
+				util.DebugPrintf("loadApolloConfig http response json unmarshal ApolloConfig err:",err)
+				continue
 			}
-			return &newApolloConfig, nil
+			util.DebugPrintf("remote_repository request success:%s",newApolloConfig)
+			return &newApolloConfig
 		}
 	}
-	return nil, nil
+	return nil
 }
 
 func (remoteConfigRepository *RemoteConfigRepository) calErrorSleepTime() time.Duration {
 	if remoteConfigRepository.ConfigNeedForceRefresh {
-		return util.OnErrorRetryInterval
+		return remoteConfigRepository.configUtil.HttpOnErrorRetryInterval
 	} else {
 		return remoteConfigRepository.schedulePolicy.Fail()
 	}
@@ -147,12 +161,14 @@ func assembleQueryConfigUrl(host string, appId string, cluster string, namespace
 	if queryParam != "" {
 		path = path + "?" + queryParam
 	}
-	util.Logger.Info(host, path)
-	return host + path
+	httpPath := host + path
+	rawUrl,_ := url.PathUnescape(httpPath)
+	util.DebugPrintf("remote_repository request rawUrl:%s",rawUrl)
+	return httpPath
 }
 
 func (remoteConfigRepository *RemoteConfigRepository) getConfigServices() []ServiceDto {
-	configServiceLoad := NewConfigServiceLoad()
+	configServiceLoad := NewConfigServiceLoad(remoteConfigRepository.configUtil)
 	return configServiceLoad.ServiceDtoList
 }
 
@@ -161,22 +177,11 @@ func (remoteConfigRepository *RemoteConfigRepository) scheduleLongPollingRefresh
 }
 
 func (remoteConfigRepository *RemoteConfigRepository) schedulePeriodicRefresh() {
-	go func() {
-		t2 := time.NewTimer(util.RefreshInterval)
-		//long poll for sync
-		for {
-			select {
-			case <-t2.C:
-				remoteConfigRepository.trySync()
-				t2.Reset(util.RefreshInterval)
-			}
-		}
-	}()
+	util.ScheduleIntervalExecutor(remoteConfigRepository.configUtil.HttpRefreshInterval, remoteConfigRepository.trySync)
 }
 
-func (remoteConfigRepository *RemoteConfigRepository) trySync() bool {
+func (remoteConfigRepository *RemoteConfigRepository) trySync() {
 	remoteConfigRepository.sync()
-	return true
 }
 
 func (remoteConfigRepository *RemoteConfigRepository) onLongPollNotified(longPollNotifiedServiceDto ServiceDto, remoteMessages ApolloNotificationMessages) {

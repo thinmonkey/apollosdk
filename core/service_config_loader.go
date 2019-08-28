@@ -1,13 +1,12 @@
 package core
 
 import (
+	"encoding/json"
+	"github.com/thinmonkey/apollosdk/util"
+	"github.com/thinmonkey/apollosdk/util/http"
 	"net/url"
 	"strings"
-	"github.com/zhhao226/apollosdk/util/http"
-	"encoding/json"
-	"time"
 	"sync"
-	"github.com/zhhao226/apollosdk/util"
 )
 
 var once sync.Once
@@ -15,11 +14,14 @@ var configServiceLoader *ConfigServiceLoader
 
 type ConfigServiceLoader struct {
 	ServiceDtoList []ServiceDto
+	configUtil     ConfitUtil
 }
 
-func NewConfigServiceLoad() *ConfigServiceLoader {
+func NewConfigServiceLoad(configUtil ConfitUtil) *ConfigServiceLoader {
 	once.Do(func() {
-		configServiceLoader = &ConfigServiceLoader{}
+		configServiceLoader = &ConfigServiceLoader{
+			configUtil: configUtil,
+		}
 		configServiceLoader.tryUpdateConfigServices()
 		configServiceLoader.schedulePeriodicRefresh()
 	})
@@ -31,41 +33,32 @@ func (serviceLoader *ConfigServiceLoader) tryUpdateConfigServices() {
 }
 
 func (serviceLoader *ConfigServiceLoader) schedulePeriodicRefresh() {
-	go func() {
-		t2 := time.NewTimer(util.RefreshInterval)
-		//long poll for sync
-		for {
-			select {
-			case <-t2.C:
-				serviceLoader.tryUpdateConfigServices()
-				t2.Reset(util.RefreshInterval)
-			}
-		}
-	}()
+	util.ScheduleIntervalExecutor(serviceLoader.configUtil.HttpRefreshInterval, serviceLoader.tryUpdateConfigServices)
 }
 
 func (serviceLoader *ConfigServiceLoader) updateConfigServices() {
-	url := serviceLoader.assembleQueryConfigUrl(util.GetMetaServer(), util.GetAppId())
+	url := serviceLoader.assembleQueryConfigUrl(serviceLoader.configUtil.MetaServer, serviceLoader.configUtil.AppId)
 
 	httpRequest := http.HttpRequest{
 		Url:            url,
-		ConnectTimeout: util.ConnectTimeout,
+		ConnectTimeout: serviceLoader.configUtil.HttpTimeout,
 	}
 
-	httpReponse, err := http.Request(httpRequest)
+	httpResponse, err := http.Request(httpRequest)
 	if err != nil {
-		util.Logger.Error(err)
+		util.DebugPrintf("updateConfigServices http err %v ", err)
+		return
 	}
-	if httpReponse.StatusCode == 200 && httpReponse.ReponseBody != nil {
+	if httpResponse.StatusCode == 200 && httpResponse.ReponseBody != nil {
 		var serviceConfig = make([]ServiceDto, 1)
-		err := json.Unmarshal(httpReponse.ReponseBody, &serviceConfig)
+		err := json.Unmarshal(httpResponse.ReponseBody, &serviceConfig)
 		if err != nil {
-			util.Logger.Error("json unmarshal err ", err)
+			util.DebugPrintf("json unmarshal err：%v ", err)
 		}
 		serviceLoader.setConfigServices(serviceConfig)
 	}
 
-	util.Logger.Debugf("Get service config response: %s, url: %s", httpReponse.StatusCode, url)
+	util.DebugPrintf("Get service config response,statusCode:%d,body:%s,url: %s", httpResponse.StatusCode, httpResponse.ReponseBody, url)
 }
 
 func (serviceLoader *ConfigServiceLoader) setConfigServices(serviceDtoList []ServiceDto) {
@@ -76,8 +69,8 @@ func (serviceLoader *ConfigServiceLoader) assembleQueryConfigUrl(host string, ap
 	path := "services/config"
 
 	queryParam := ""
-	if util.GetAppId() != "" {
-		appIdQuery := "appId=" + url.QueryEscape(util.GetAppId()) + "&"
+	if appId := serviceLoader.configUtil.AppId; appId != "" {
+		appIdQuery := "appId=" + url.QueryEscape(appId) + "&"
 		queryParam = queryParam + appIdQuery
 	}
 	if util.GetLocalIp() != "" {
@@ -90,6 +83,8 @@ func (serviceLoader *ConfigServiceLoader) assembleQueryConfigUrl(host string, ap
 	if queryParam != "" {
 		path = path + "?" + queryParam
 	}
-	util.Logger.Info(host, path)
-	return host + path
+	httpPath := host + path
+	rawUrl, _ := url.PathUnescape(httpPath)
+	util.DebugPrintf("service_config request rawUrl:%s", rawUrl)
+	return httpPath
 }
